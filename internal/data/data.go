@@ -71,7 +71,7 @@ func NewData(conf *conf.Data, log *zap.SugaredLogger) (*Data, func(), error) {
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 
 	// create table
-	db.AutoMigrate(&biz.User{})
+	db.AutoMigrate(&biz.User{}, &biz.Dimension{})
 
 	return &Data{db: db}, func() {}, nil
 }
