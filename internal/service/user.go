@@ -67,7 +67,7 @@ func (u *UserService) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, v1.UserLoginResp{
 		RespCommon: api.Success,
-		Data: v1.UserLoginData{
+		Data: &v1.UserLoginData{
 			Token:  token,
 			Name:   user.Name,
 			Avatar: user.Avatar,

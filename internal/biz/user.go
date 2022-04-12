@@ -8,16 +8,16 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string
-	Avatar   string
-	Email    string `gorm:"index:idx_email,unique"`
-	Pswd     string
-	Intro    string
-	Role     string
-	Sex      string
-	School   string
-	Sid      string `gorm:"index:idx_sid,unique"`
-	IsActive bool
+	Name     string `gorm:"not null;size:50"`
+	Avatar   string `gorm:"default:'';size:256"`
+	Email    string `gorm:"not null;index:idx_email,unique;size:50"`
+	Pswd     string `gorm:"not null;size:50"`
+	Intro    string `gorm:"default:'';size:256"`
+	Role     string `gorm:"not null;size:50"`
+	Sex      string `gorm:"not null;size:50"`
+	School   string `gorm:"not null;size:50"`
+	Sid      string `gorm:"not null;index:idx_sid,unique;size:50"`
+	IsActive bool   `gorm:"not null;default:false"`
 }
 
 type IUserRepo interface {
@@ -25,7 +25,7 @@ type IUserRepo interface {
 	GetUserBySid(ctx context.Context, sid string) (*User, error)
 	GetUserById(ctx context.Context, id uint) (*User, error)
 	ListUser(ctx context.Context) ([]*User, error)
-	UpdateUser(ctx context.Context, id uint, user *User) error
+	UpdateUser(ctx context.Context, user *User) error
 	InsertUser(ctx context.Context, user *User) error
 	DeleteUser(ctx context.Context, id uint) error
 }

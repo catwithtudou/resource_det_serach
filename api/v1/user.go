@@ -18,5 +18,5 @@ type UserLoginData struct {
 
 type UserLoginResp struct {
 	api.RespCommon
-	Data UserLoginData `json:"data,omitempty"`
+	Data *UserLoginData `json:"data,omitempty"`
 }
