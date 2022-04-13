@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
+	"mime/multipart"
 	"resource_det_search/internal/biz"
 	"resource_det_search/internal/constants"
 	"resource_det_search/internal/utils"
@@ -91,4 +93,32 @@ func (u *userUsecase) UpdateUserInfo(ctx context.Context, user *biz.User) error 
 	}
 
 	return nil
+}
+
+func (u *userUsecase) UploadUserAvatar(ctx context.Context, id uint, fileData *multipart.FileHeader) (string, error) {
+	if id <= 0 || fileData == nil {
+		return "", errors.New("[UploadUserAvatar]user or data is nil")
+	}
+
+	fileBytes, err := utils.MultipartFileHeaderToBytes(fileData)
+	if err != nil {
+		return "", fmt.Errorf("[UploadUserAvatar]failed to MultipartFileHeaderToBytes:err=[%+v]", err)
+	}
+
+	key, err := utils.UploadByteData(ctx, fileBytes, utils.GenAvatarKey(id))
+	if err != nil {
+		return "", fmt.Errorf("[UploadUserAvatar]failed to UploadByteData:err=[%+v]", err)
+	}
+
+	avatarLink := utils.GenFileLink(key)
+	err = u.repo.UpdateUser(ctx, &biz.User{
+		Model:  gorm.Model{ID: id},
+		Avatar: avatarLink,
+	})
+	if err != nil {
+		return "", fmt.Errorf("[UploadUserAvatar]failed to UpdateUser:err=[%+v]", err)
+
+	}
+
+	return avatarLink, nil
 }

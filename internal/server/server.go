@@ -15,11 +15,15 @@ type Server struct {
 
 func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dimensionService *service.DimensionService) *Server {
 	r := gin.Default()
+
+	r.MaxMultipartMemory = 8 << 20
+
 	r.POST("/user/login", userService.Login)
 	r.POST("/user", userService.Register)
 
 	r.GET("/user", AuthJwtMw(logger), userService.GetUserInfo)
 	r.PUT("/user", AuthJwtMw(logger), userService.UpdateUserInfo)
+	r.POST("/user/avatar", AuthJwtMw(logger), userService.UploadUserAvatar)
 
 	return &Server{HttpEngine: r}
 }

@@ -21,5 +21,12 @@ message Data {
     string driver = 1;
     string source = 2;
   }
+  message  Qiniuyun{
+    string access = 1;
+    string secret = 2;
+    string bucket = 3;
+    string domain = 4;
+  }
   Database database = 1;
+  Qiniuyun qiniuyun = 2;
 }

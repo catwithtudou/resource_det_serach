@@ -5,3 +5,8 @@ data:
   database:
     driver: mysql
     source: root:a949812478@tcp(127.0.0.1:3306)/resource_det_search?charset=utf8&parseTime=True&loc=Local
+  qiniuyun:
+    access:
+    secret:
+    bucket:
+    domain:

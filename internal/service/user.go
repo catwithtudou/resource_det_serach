@@ -84,17 +84,13 @@ func (u *UserService) Register(c *gin.Context) {
 	var req v1.UserRegisterReq
 	if err := c.Bind(&req); err != nil {
 		u.log.Errorf("[UserService-Register]failed to bind:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UserRegisterResp{
-			RespCommon: api.FormEmptyErr,
-		})
+		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
 	}
 
 	if len(req.Email) > 100 || len(req.School) > 100 || len(req.Name) > 100 || !utils.CheckEmail(req.Email) || !utils.CheckRole(req.Role) || !utils.CheckSex(req.Sex) || utils.CheckPswd(req.Pswd) {
 		u.log.Errorf("[UserService-Register]illegal params")
-		c.JSON(http.StatusOK, v1.UserRegisterResp{
-			RespCommon: api.FormIllegalErr,
-		})
+		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
@@ -110,29 +106,23 @@ func (u *UserService) Register(c *gin.Context) {
 	})
 	if err != nil && code == constants.DefaultErr {
 		u.log.Errorf("[UserService-Register]failed to register:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UserRegisterResp{
-			RespCommon: api.DefaultErr,
-		})
+		c.JSON(http.StatusOK, api.DefaultErr)
 		return
 	}
 
 	if err != nil && code == constants.UserEmailExist {
 		u.log.Errorf("[UserService-Register]the user email is exist:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UserRegisterResp{
-			RespCommon: api.UserEmailExist,
-		})
+		c.JSON(http.StatusOK, api.UserEmailExist)
 		return
 	}
 
 	if err != nil && code == constants.UserSidExist {
 		u.log.Errorf("[UserService-Register]the user sid is exist:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UserRegisterResp{
-			RespCommon: api.UserSidExist,
-		})
+		c.JSON(http.StatusOK, api.UserSidExist)
 		return
 	}
 
-	c.JSON(http.StatusOK, v1.UserRegisterResp{RespCommon: api.Success})
+	c.JSON(http.StatusOK, api.Success)
 	return
 }
 
@@ -175,26 +165,20 @@ func (u *UserService) UpdateUserInfo(c *gin.Context) {
 	uid, ok := c.Get("uid")
 	if !ok || uid.(uint) <= 0 {
 		u.log.Errorf("[UserService-UpdateUserInfo]failed to get uid")
-		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
-			RespCommon: api.UserAuthErr,
-		})
+		c.JSON(http.StatusOK, api.UserAuthErr)
 		return
 	}
 
 	var req v1.UpdateUserInfoReq
 	if err := c.Bind(&req); err != nil {
 		u.log.Errorf("[UserService-UpdateUserInfo]failed to bind:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
-			RespCommon: api.FormEmptyErr,
-		})
+		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
 	}
 
 	if len(req.Intro) > 100 {
 		u.log.Errorf("[UserService-UpdateUserInfo]illegal params")
-		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
-			RespCommon: api.FormIllegalErr,
-		})
+		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
@@ -204,12 +188,39 @@ func (u *UserService) UpdateUserInfo(c *gin.Context) {
 	})
 	if err != nil {
 		u.log.Errorf("[UserService-UpdateUserInfo]failed to UpdateUserInfo:err=[%+v]", err)
-		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
-			RespCommon: api.DefaultErr,
-		})
+		c.JSON(http.StatusOK, api.DefaultErr)
 		return
 	}
 
-	c.JSON(http.StatusOK, v1.UpdateUserInfoResp{RespCommon: api.Success})
+	c.JSON(http.StatusOK, api.Success)
+	return
+}
+
+func (u *UserService) UploadUserAvatar(c *gin.Context) {
+	uid, ok := c.Get("uid")
+	if !ok || uid.(uint) <= 0 {
+		u.log.Errorf("[UserService-UploadUserAvatar]failed to get uid")
+		c.JSON(http.StatusOK, api.UserAuthErr)
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		u.log.Errorf("[UserService-UploadUserAvatar]failed to FormFile:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormFileErr)
+		return
+	}
+
+	link, err := u.user.UploadUserAvatar(c, uid.(uint), file)
+	if err != nil {
+		u.log.Errorf("[UserService-UploadUserAvatar]failed to UploadUserAvatar:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.DefaultErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, v1.UploadUserAvatarResp{
+		RespCommon: api.Success,
+		Data:       &v1.UserAvatarData{Avatar: link},
+	})
 	return
 }

@@ -33,10 +33,6 @@ type UserRegisterReq struct {
 	School string `form:"school" binding:"required" json:"school"`
 }
 
-type UserRegisterResp struct {
-	api.RespCommon
-}
-
 type UserInfoData struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar,omitempty"`
@@ -57,6 +53,11 @@ type UpdateUserInfoReq struct {
 	Intro string `form:"intro" binding:"required" json:"intro"`
 }
 
-type UpdateUserInfoResp struct {
+type UserAvatarData struct {
+	Avatar string `json:"avatar"`
+}
+
+type UploadUserAvatarResp struct {
 	api.RespCommon
+	Data *UserAvatarData `json:"data,omitempty"`
 }

@@ -29,6 +29,11 @@ var (
 		Msg:  "user auth err",
 	}
 
+	FormFileErr = RespCommon{
+		Code: 10005,
+		Msg:  "form file err",
+	}
+
 	UserEmailNotExist = RespCommon{
 		Code: 11001,
 		Msg:  "user email is not exist",

@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"resource_det_search/internal/conf"
+	"resource_det_search/internal/utils"
 )
 
 var (
@@ -59,6 +60,8 @@ func main() {
 	logger := InitLogger()
 	defer logger.Sync()
 	cf := InitConf(FlagConf)
+
+	utils.NewQny(cf.Data.Qiniuyun.Bucket, cf.Data.Qiniuyun.Access, cf.Data.Qiniuyun.Secret, cf.Data.Qiniuyun.Domain)
 
 	app, _, err := initApp(cf.Data, logger)
 	if err != nil {

@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 	"gorm.io/gorm"
+	"mime/multipart"
 	"resource_det_search/internal/constants"
 )
 
@@ -35,4 +36,5 @@ type IUserUsecase interface {
 	Register(ctx context.Context, user *User) (constants.ErrCode, error)
 	GetUserInfo(ctx context.Context, id uint) (*User, error)
 	UpdateUserInfo(ctx context.Context, user *User) error
+	UploadUserAvatar(ctx context.Context, id uint, fileData *multipart.FileHeader) (string, error)
 }
