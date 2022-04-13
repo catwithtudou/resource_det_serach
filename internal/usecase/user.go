@@ -67,3 +67,28 @@ func (u *userUsecase) Register(ctx context.Context, user *biz.User) (constants.E
 
 	return constants.Success, nil
 }
+
+func (u *userUsecase) GetUserInfo(ctx context.Context, id uint) (*biz.User, error) {
+	if id <= 0 {
+		return nil, errors.New("[GetUserInfo]id is nil")
+	}
+
+	user, err := u.repo.GetUserById(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("[GetUserInfo]failed to GetUserById:err=[%+v]", err)
+	}
+
+	return user, nil
+}
+func (u *userUsecase) UpdateUserInfo(ctx context.Context, user *biz.User) error {
+	if user == nil {
+		return errors.New("[UpdateUserInfo]user is nil")
+	}
+
+	err := u.repo.UpdateUser(ctx, user)
+	if err != nil {
+		return fmt.Errorf("[UpdateUserInfo]failed to UpdateUser:err=[%+v]", err)
+	}
+
+	return nil
+}

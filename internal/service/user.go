@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"net/http"
 	"resource_det_search/api"
 	v1 "resource_det_search/api/v1"
@@ -132,4 +133,83 @@ func (u *UserService) Register(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, v1.UserRegisterResp{RespCommon: api.Success})
+	return
+}
+
+func (u *UserService) GetUserInfo(c *gin.Context) {
+	uid, ok := c.Get("uid")
+	if !ok || uid.(uint) <= 0 {
+		u.log.Errorf("[UserService-GetUserInfo]failed to get uid")
+		c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
+			RespCommon: api.UserAuthErr,
+		})
+		return
+	}
+
+	user, err := u.user.GetUserInfo(c, uid.(uint))
+	if err != nil {
+		u.log.Errorf("[UserService-GetUserInfo]failed to GetUserInfo:err=[%+v]", err)
+		c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
+			RespCommon: api.DefaultErr,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
+		RespCommon: api.Success,
+		Data: &v1.UserInfoData{
+			Name:   user.Name,
+			Avatar: user.Avatar,
+			Email:  user.Email,
+			Intro:  user.Intro,
+			Role:   user.Role,
+			Sex:    user.Sex,
+			School: user.School,
+			Sid:    user.Sid,
+		},
+	})
+	return
+}
+
+func (u *UserService) UpdateUserInfo(c *gin.Context) {
+	uid, ok := c.Get("uid")
+	if !ok || uid.(uint) <= 0 {
+		u.log.Errorf("[UserService-UpdateUserInfo]failed to get uid")
+		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
+			RespCommon: api.UserAuthErr,
+		})
+		return
+	}
+
+	var req v1.UpdateUserInfoReq
+	if err := c.Bind(&req); err != nil {
+		u.log.Errorf("[UserService-UpdateUserInfo]failed to bind:err=[%+v]", err)
+		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
+			RespCommon: api.FormEmptyErr,
+		})
+		return
+	}
+
+	if len(req.Intro) > 100 {
+		u.log.Errorf("[UserService-UpdateUserInfo]illegal params")
+		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
+			RespCommon: api.FormIllegalErr,
+		})
+		return
+	}
+
+	err := u.user.UpdateUserInfo(c, &biz.User{
+		Model: gorm.Model{ID: uid.(uint)},
+		Intro: req.Intro,
+	})
+	if err != nil {
+		u.log.Errorf("[UserService-UpdateUserInfo]failed to UpdateUserInfo:err=[%+v]", err)
+		c.JSON(http.StatusOK, v1.UpdateUserInfoResp{
+			RespCommon: api.DefaultErr,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, v1.UpdateUserInfoResp{RespCommon: api.Success})
+	return
 }

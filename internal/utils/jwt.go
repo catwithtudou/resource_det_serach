@@ -7,9 +7,8 @@ import (
 )
 
 type LoginClaims struct {
-	Uid      uint  `json:"uid"`
-	LoginTs  int64 `json:"login_ts"`
-	ExpireTs int64 `json:"expire_ts"`
+	Uid     uint  `json:"uid"`
+	LoginTs int64 `json:"login_ts"`
 	jwt.StandardClaims
 }
 

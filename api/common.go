@@ -14,7 +14,6 @@ var (
 		Code: 10001,
 		Msg:  "error",
 	}
-
 	FormEmptyErr = RespCommon{
 		Code: 10002,
 		Msg:  "form params exist empty",
@@ -23,6 +22,11 @@ var (
 	FormIllegalErr = RespCommon{
 		Code: 10003,
 		Msg:  "form params are illegal",
+	}
+
+	UserAuthErr = RespCommon{
+		Code: 10004,
+		Msg:  "user auth err",
 	}
 
 	UserEmailNotExist = RespCommon{
