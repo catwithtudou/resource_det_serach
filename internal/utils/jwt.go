@@ -25,7 +25,7 @@ func GenJwtToken(uid uint) (string, error) {
 		LoginTs: ts.Unix(),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: ts.Add(TokenExpireDuration).Unix(),
-		}
+		},
 	}
 	// 使用指定的签名方法创建签名对象
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)

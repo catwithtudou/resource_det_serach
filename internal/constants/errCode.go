@@ -7,7 +7,9 @@ const (
 	DefaultErr ErrCode = 10001
 
 	//User
-	UserActiveErr ErrCode = 11001
-	UserPswdErr   ErrCode = 11002
-	UserEmailErr  ErrCode = 11003
+	UserEmailErr   ErrCode = 11001
+	UserActiveErr  ErrCode = 11002
+	UserPswdErr    ErrCode = 11003
+	UserEmailExist ErrCode = 11004
+	UserSidExist   ErrCode = 11005
 )

@@ -31,7 +31,7 @@ func TestInsertUser(t *testing.T) {
 
 func TestGetUserByEmail(t *testing.T) {
 	u, ctx := newUserRepoTest(t)
-	user, err := u.GetUserByEmail(ctx, "111@qq.com")
+	user, err := u.GetUserByEmail(ctx, "11@qq.com")
 	if err != nil {
 		t.Fatal(err)
 	}

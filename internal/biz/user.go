@@ -32,4 +32,5 @@ type IUserRepo interface {
 
 type IUserUsecase interface {
 	Login(ctx context.Context, email string, pswd string) (string, *User, constants.ErrCode, error)
+	Register(ctx context.Context, user *User) (constants.ErrCode, error)
 }

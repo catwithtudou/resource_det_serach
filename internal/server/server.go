@@ -15,5 +15,6 @@ type Server struct {
 func NewServer(userService *service.UserService, dimensionService *service.DimensionService) *Server {
 	r := gin.Default()
 	r.POST("/user/login", userService.Login)
+	r.POST("/user", userService.Register)
 	return &Server{HttpEngine: r}
 }

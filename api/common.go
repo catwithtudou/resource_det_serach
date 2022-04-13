@@ -15,25 +15,34 @@ var (
 		Msg:  "error",
 	}
 
-	UserFormEmpty = RespCommon{
-		Code: 11001,
+	FormEmptyErr = RespCommon{
+		Code: 10002,
 		Msg:  "form params exist empty",
 	}
 
-	UserFormIllegal = RespCommon{
-		Code: 11002,
+	FormIllegalErr = RespCommon{
+		Code: 10003,
 		Msg:  "form params are illegal",
 	}
+
 	UserEmailNotExist = RespCommon{
-		Code: 11003,
+		Code: 11001,
 		Msg:  "user email is not exist",
 	}
 	UserNotActive = RespCommon{
-		Code: 11004,
+		Code: 11002,
 		Msg:  "user email is not active",
 	}
 	UserPswdErr = RespCommon{
-		Code: 11005,
+		Code: 11003,
 		Msg:  "user password is wrong",
+	}
+	UserEmailExist = RespCommon{
+		Code: 11004,
+		Msg:  "user email is exist",
+	}
+	UserSidExist = RespCommon{
+		Code: 11005,
+		Msg:  "user sid is exist",
 	}
 )

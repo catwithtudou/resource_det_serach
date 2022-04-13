@@ -1,6 +1,8 @@
 package utils
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 func JsonToString(obj interface{}) string {
 	data, _ := json.Marshal(obj)

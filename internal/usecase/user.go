@@ -44,3 +44,26 @@ func (u *userUsecase) Login(ctx context.Context, email string, pswd string) (str
 
 	return jwtToken, user, constants.Success, nil
 }
+
+func (u *userUsecase) Register(ctx context.Context, user *biz.User) (constants.ErrCode, error) {
+	if user == nil {
+		return constants.DefaultErr, errors.New("[UserRegister]the user is nil")
+	}
+
+	reUser, err := u.repo.GetUserByEmail(ctx, user.Email)
+	if err == nil && reUser.ID != 0 {
+		return constants.UserEmailExist, fmt.Errorf("[UserRegister]the user email is exist:err=[%+v]", err)
+	}
+
+	reUser, err = u.repo.GetUserBySid(ctx, user.Sid)
+	if err == nil && reUser.ID != 0 {
+		return constants.UserSidExist, fmt.Errorf("[UserRegister]the user sid is exist:err=[%+v]", err)
+	}
+
+	err = u.repo.InsertUser(ctx, user)
+	if err != nil {
+		return constants.DefaultErr, fmt.Errorf("[UserRegister]failed to insert user:err=[%+v]", err)
+	}
+
+	return constants.Success, nil
+}
