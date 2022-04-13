@@ -33,6 +33,10 @@ type UserRegisterReq struct {
 	School string `form:"school" binding:"required" json:"school"`
 }
 
+type UserGetUserInfoReq struct {
+	Uid uint `form:"uid" json:"uid"`
+}
+
 type UserInfoData struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar,omitempty"`

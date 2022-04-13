@@ -127,16 +127,25 @@ func (u *UserService) Register(c *gin.Context) {
 }
 
 func (u *UserService) GetUserInfo(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		u.log.Errorf("[UserService-GetUserInfo]failed to get uid")
-		c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
-			RespCommon: api.UserAuthErr,
-		})
-		return
+	var req v1.UserGetUserInfoReq
+	var uid uint
+	if _ = c.Bind(&req); req.Uid > 0 {
+		uid = req.Uid
 	}
 
-	user, err := u.user.GetUserInfo(c, uid.(uint))
+	if uid <= 0 {
+		getUid, ok := c.Get("uid")
+		if !ok || getUid.(uint) <= 0 {
+			u.log.Errorf("[UserService-GetUserInfo]failed to get uid")
+			c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
+				RespCommon: api.UserAuthErr,
+			})
+			return
+		}
+		uid = getUid.(uint)
+	}
+
+	user, err := u.user.GetUserInfo(c, uid)
 	if err != nil {
 		u.log.Errorf("[UserService-GetUserInfo]failed to GetUserInfo:err=[%+v]", err)
 		c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
