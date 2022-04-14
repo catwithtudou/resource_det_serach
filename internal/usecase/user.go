@@ -54,12 +54,18 @@ func (u *userUsecase) Register(ctx context.Context, user *biz.User) (constants.E
 
 	reUser, err := u.repo.GetUserByEmail(ctx, user.Email)
 	if err == nil && reUser.ID != 0 {
-		return constants.UserEmailExist, fmt.Errorf("[UserRegister]the user email is exist:err=[%+v]", err)
+		return constants.UserEmailExist, errors.New("[UserRegister]the user email is exist")
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return constants.DefaultErr, fmt.Errorf("[UserRegister]failed to GetUserByEmail:err=[%+v]", err)
 	}
 
 	reUser, err = u.repo.GetUserBySid(ctx, user.Sid)
 	if err == nil && reUser.ID != 0 {
 		return constants.UserSidExist, fmt.Errorf("[UserRegister]the user sid is exist:err=[%+v]", err)
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return constants.DefaultErr, fmt.Errorf("[UserRegister]failed to GetUserBySid:err=[%+v]", err)
 	}
 
 	err = u.repo.InsertUser(ctx, user)

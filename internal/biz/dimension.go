@@ -7,15 +7,23 @@ import (
 
 type Dimension struct {
 	gorm.Model
-	Uid  uint   `gorm:"index:idx_uid_type"`
-	Type string `gorm:"index:idx_uid_type"`
-	Name string
+	Uid  uint   `gorm:"not null;index:idx_uid_type"`
+	Type string `gorm:"not null;size:50;index:idx_uid_type"`
+	Name string `gorm:"not null;size:50"`
 }
 
 type IDimensionRepo interface {
-	GetDimensionById(ctx context.Context, id uint) (*Dimension, error)
+	GetDmById(ctx context.Context, did uint) (*Dimension, error)
+	GetDmByUid(ctx context.Context, uid uint) ([]*Dimension, error)
+	InsertDm(ctx context.Context, dm *Dimension) error
+	UpdateDm(ctx context.Context, dm *Dimension) error
+	DeleteDm(ctx context.Context, did uint) error
+	GetDmByUidTypeName(ctx context.Context, uid uint, typeStr string, name string) (*Dimension, error)
 }
 
 type IDimensionUsecase interface {
-	GetUserDimension(ctx context.Context, uid uint) ([]*Dimension, error)
+	GetUserDm(ctx context.Context, uid uint) (map[string][]*Dimension, error)
+	AddUserDm(ctx context.Context, dm *Dimension) error
+	UpdateUserDm(ctx context.Context, did uint, name string, uid uint) error
+	DeleteUserDm(ctx context.Context, did, uid uint) error
 }

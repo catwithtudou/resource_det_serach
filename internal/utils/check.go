@@ -28,6 +28,12 @@ func CheckPswd(str string) bool {
 	return result
 }
 
+func CheckType(str string) bool {
+	types := []string{"tag", "category"}
+	// part 类型只能官方手动创建
+	return Contains(types, str)
+}
+
 func Contains(elems []string, elem string) bool {
 	for _, e := range elems {
 		if elem == e {

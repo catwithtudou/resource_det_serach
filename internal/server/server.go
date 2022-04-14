@@ -21,9 +21,16 @@ func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dime
 	r.POST("/user/login", userService.Login)
 	r.POST("/user", userService.Register)
 
-	r.GET("/user", AuthJwtMw(logger), userService.GetUserInfo)
-	r.PUT("/user", AuthJwtMw(logger), userService.UpdateUserInfo)
-	r.POST("/user/avatar", AuthJwtMw(logger), userService.UploadUserAvatar)
+	r.Use(AuthJwtMw(logger))
+
+	r.GET("/user", userService.GetUserInfo)
+	r.PUT("/user", userService.UpdateUserInfo)
+	r.POST("/user/avatar", userService.UploadUserAvatar)
+
+	r.POST("/dimension", dimensionService.AddUserDm)
+	r.GET("/dimension", dimensionService.GetUserDm)
+	r.PUT("/dimension", dimensionService.UpdateUserDm)
+	r.DELETE("/dimension", dimensionService.DeleteUserDm)
 
 	return &Server{HttpEngine: r}
 }

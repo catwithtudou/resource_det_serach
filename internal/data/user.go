@@ -50,7 +50,7 @@ func (u *userRepo) GetUserById(ctx context.Context, id uint) (*biz.User, error) 
 	return result, nil
 }
 func (u *userRepo) ListUser(ctx context.Context) ([]*biz.User, error) {
-	var result []*biz.User
+	result := make([]*biz.User, 0)
 	if err := u.data.db.Model(&biz.User{}).Find(&result).Error; err != nil {
 		return nil, err
 	}
