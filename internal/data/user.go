@@ -60,34 +60,18 @@ func (u *userRepo) UpdateUser(ctx context.Context, user *biz.User) error {
 	if user == nil {
 		return errors.New("user is nil")
 	}
-
-	if err := u.data.db.Model(&user).Updates(biz.User{Avatar: user.Avatar, Intro: user.Intro, IsActive: user.IsActive}).Error; err != nil {
-		return err
-	}
-
-	return nil
-
+	return u.data.db.Model(&user).Updates(biz.User{Avatar: user.Avatar, Intro: user.Intro, IsActive: user.IsActive}).Error
 }
 func (u *userRepo) InsertUser(ctx context.Context, user *biz.User) error {
 	if user == nil {
 		return errors.New("user is nil")
 	}
-
-	if err := u.data.db.Create(user).Error; err != nil {
-		return err
-	}
-
-	return nil
-
+	return u.data.db.Create(user).Error
 }
 func (u *userRepo) DeleteUser(ctx context.Context, id uint) error {
 	if id <= 0 {
 		return errors.New("id is illegal")
 	}
 
-	if err := u.data.db.Delete(&biz.User{}, id).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return u.data.db.Delete(&biz.User{}, id).Error
 }

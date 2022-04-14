@@ -32,7 +32,7 @@ type IDocumentRepo interface {
 	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, error)
 	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
-	DeleteDocById(ctx context.Context, doc *Document) error
+	DeleteDocById(ctx context.Context, id uint) error
 }
 
 type IDocumentUsecase interface {

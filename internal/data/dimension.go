@@ -57,22 +57,14 @@ func (d *dimensionRepo) InsertDm(ctx context.Context, dm *biz.Dimension) error {
 		return errors.New("dm is nil")
 	}
 
-	if err := d.data.db.Create(dm).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return d.data.db.Create(dm).Error
 }
 func (d *dimensionRepo) UpdateDm(ctx context.Context, dm *biz.Dimension) error {
 	if dm == nil {
 		return errors.New("dm is nil")
 	}
 
-	if err := d.data.db.Model(&dm).Update("name", dm.Name).Error; err != nil {
-		return err
-	}
-
-	return nil
+	return d.data.db.Model(&dm).Update("name", dm.Name).Error
 
 }
 func (d *dimensionRepo) DeleteDm(ctx context.Context, did uint) error {
@@ -80,10 +72,5 @@ func (d *dimensionRepo) DeleteDm(ctx context.Context, did uint) error {
 		return errors.New("did is illegal")
 	}
 
-	if err := d.data.db.Delete(&biz.Dimension{}, did).Error; err != nil {
-		return err
-	}
-
-	return nil
-
+	return d.data.db.Delete(&biz.Dimension{}, did).Error
 }
