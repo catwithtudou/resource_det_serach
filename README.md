@@ -1,0 +1,1 @@
+# Resource Det Search BE
