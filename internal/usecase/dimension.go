@@ -31,7 +31,7 @@ func (d *dimensionUsecase) GetUserDm(ctx context.Context, uid uint) (map[string]
 		return nil, fmt.Errorf("[GetUserDm]failed to get GetUserById:err=[%+v]", err)
 	}
 
-	dms, err := d.repo.GetDmByUid(ctx, uid)
+	dms, err := d.repo.GetDmsByUid(ctx, uid)
 	if err != nil {
 		return nil, fmt.Errorf("[GetUserDm]failed to get GetDmByUid:err=[%+v]", err)
 	}

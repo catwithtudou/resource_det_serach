@@ -7,14 +7,14 @@ import (
 
 type Dimension struct {
 	gorm.Model
-	Uid  uint   `gorm:"not null;index:idx_uid_type"`
+	Uid  uint   `gorm:"not null;index:idx_uid_type,idx_uid"`
 	Type string `gorm:"not null;size:50;index:idx_uid_type"`
 	Name string `gorm:"not null;size:50"`
 }
 
 type IDimensionRepo interface {
 	GetDmById(ctx context.Context, did uint) (*Dimension, error)
-	GetDmByUid(ctx context.Context, uid uint) ([]*Dimension, error)
+	GetDmsByUid(ctx context.Context, uid uint) ([]*Dimension, error)
 	InsertDm(ctx context.Context, dm *Dimension) error
 	UpdateDm(ctx context.Context, dm *Dimension) error
 	DeleteDm(ctx context.Context, did uint) error

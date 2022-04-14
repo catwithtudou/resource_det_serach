@@ -13,7 +13,7 @@ type Server struct {
 	HttpEngine *gin.Engine
 }
 
-func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dimensionService *service.DimensionService) *Server {
+func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dimensionService *service.DimensionService, documentService *service.DocumentService) *Server {
 	r := gin.Default()
 
 	r.MaxMultipartMemory = 8 << 20

@@ -16,7 +16,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var ProvideSet = wire.NewSet(NewData, NewUserRepo, NewDimensionRepo)
+var ProvideSet = wire.NewSet(NewData, NewUserRepo, NewDimensionRepo, NewDocumentRepo)
 
 // Data .
 type Data struct {
@@ -71,7 +71,7 @@ func NewData(conf *conf.Data, log *zap.SugaredLogger) (*Data, func(), error) {
 	sqlDb.SetConnMaxLifetime(5 * time.Minute)
 
 	// create table
-	db.AutoMigrate(&biz.User{}, &biz.Dimension{})
+	_ = db.AutoMigrate(&biz.User{}, &biz.Dimension{}, &biz.Document{}, &biz.DocWithDm{})
 
 	return &Data{db: db}, func() {}, nil
 }

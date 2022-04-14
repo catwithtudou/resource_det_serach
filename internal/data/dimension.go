@@ -28,7 +28,7 @@ func (d *dimensionRepo) GetDmById(ctx context.Context, did uint) (*biz.Dimension
 
 	return result, nil
 }
-func (d *dimensionRepo) GetDmByUid(ctx context.Context, uid uint) ([]*biz.Dimension, error) {
+func (d *dimensionRepo) GetDmsByUid(ctx context.Context, uid uint) ([]*biz.Dimension, error) {
 	if uid <= 0 {
 		return nil, errors.New("uid is nil")
 	}

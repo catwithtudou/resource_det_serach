@@ -28,7 +28,10 @@ func initApp(confData *conf.Data, sugaredLogger *zap.SugaredLogger) (*server.Ser
 	iDimensionRepo := data.NewDimensionRepo(dataData)
 	iDimensionUsecase := usecase.NewDimensionUsecase(iDimensionRepo, iUserRepo)
 	dimensionService := service.NewDimensionService(iDimensionUsecase, sugaredLogger)
-	serverServer := server.NewServer(sugaredLogger, userService, dimensionService)
+	iDocumentRepo := data.NewDocumentRepo(dataData)
+	iDocumentUsecase := usecase.NewDocumentUsecase(iDocumentRepo, iUserRepo, iDimensionRepo)
+	documentService := service.NewDocumentService(iDocumentUsecase, sugaredLogger)
+	serverServer := server.NewServer(sugaredLogger, userService, dimensionService, documentService)
 	return serverServer, func() {
 		cleanup()
 	}, nil
