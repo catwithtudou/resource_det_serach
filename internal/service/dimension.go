@@ -31,7 +31,7 @@ func (d *DimensionService) AddUserDm(c *gin.Context) {
 	}
 
 	var req v1.DimensionAddUserDmReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		d.log.Errorf("[DimensionService-AddUserDm]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
@@ -61,7 +61,7 @@ func (d *DimensionService) AddUserDm(c *gin.Context) {
 func (d *DimensionService) GetUserDm(c *gin.Context) {
 	var req v1.DimensionGetUserDmReq
 	var uid uint
-	if _ = c.Bind(&req); req.Uid > 0 {
+	if _ = c.ShouldBind(&req); req.Uid > 0 {
 		uid = req.Uid
 	}
 
@@ -110,7 +110,7 @@ func (d *DimensionService) UpdateUserDm(c *gin.Context) {
 	}
 
 	var req v1.DimensionUpdateUserDmReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		d.log.Errorf("[DimensionService-UpdateUserDm]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
@@ -142,7 +142,7 @@ func (d *DimensionService) DeleteUserDm(c *gin.Context) {
 	}
 
 	var req v1.DimensionDeleteUserDmReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		d.log.Errorf("[DimensionService-DeleteUserDm]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return

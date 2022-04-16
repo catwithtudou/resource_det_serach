@@ -26,7 +26,7 @@ func NewUserService(user biz.IUserUsecase, logger *zap.SugaredLogger) *UserServi
 
 func (u *UserService) Login(c *gin.Context) {
 	var req v1.UserLoginReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		u.log.Errorf("[UserService-Login]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, v1.UserLoginResp{
 			RespCommon: api.FormEmptyErr,
@@ -82,7 +82,7 @@ func (u *UserService) Login(c *gin.Context) {
 
 func (u *UserService) Register(c *gin.Context) {
 	var req v1.UserRegisterReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		u.log.Errorf("[UserService-Register]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
@@ -129,7 +129,7 @@ func (u *UserService) Register(c *gin.Context) {
 func (u *UserService) GetUserInfo(c *gin.Context) {
 	var req v1.UserGetUserInfoReq
 	var uid uint
-	if _ = c.Bind(&req); req.Uid > 0 {
+	if _ = c.ShouldBind(&req); req.Uid > 0 {
 		uid = req.Uid
 	}
 
@@ -179,7 +179,7 @@ func (u *UserService) UpdateUserInfo(c *gin.Context) {
 	}
 
 	var req v1.UpdateUserInfoReq
-	if err := c.Bind(&req); err != nil {
+	if err := c.ShouldBind(&req); err != nil {
 		u.log.Errorf("[UserService-UpdateUserInfo]failed to bind:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.FormEmptyErr)
 		return
