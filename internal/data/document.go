@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"gorm.io/gorm"
 	"resource_det_search/internal/biz"
 )
 
@@ -66,14 +67,23 @@ func (d *documentRepo) UpdateDocById(ctx context.Context, doc *biz.Document) err
 	}
 
 	return d.data.db.Model(&doc).Updates(biz.Document{
-		Intro:        doc.Intro,
-		Title:        doc.Title,
-		DownloadNum:  doc.DownloadNum,
-		ScanNum:      doc.ScanNum,
-		LikeNum:      doc.LikeNum,
+		Intro: doc.Intro,
+		Title: doc.Title,
+		//DownloadNum:  doc.DownloadNum,
+		//ScanNum:      doc.ScanNum,
+		//LikeNum:      doc.LikeNum,
 		IsLoadSearch: doc.IsLoadSearch,
 		IsSave:       doc.IsSave,
+		Content:      doc.Content,
 	}).Error
+}
+func (d *documentRepo) AddDocLikeNum(ctx context.Context, id uint, num uint) error {
+	if id <= 0 || num <= 0 {
+		return errors.New("id or num is nil")
+	}
+	return d.data.db.Model(&biz.Document{
+		Model: gorm.Model{ID: id},
+	}).UpdateColumn("like_num", gorm.Expr("like_num + ?", num)).Error
 }
 func (d *documentRepo) DeleteDocById(ctx context.Context, id uint) error {
 	if id <= 0 {
@@ -89,6 +99,32 @@ func (d *documentRepo) DeleteDocById(ctx context.Context, id uint) error {
 	}
 
 	if err := tx.Delete(&biz.DocWithDm{}, "doc_id = ?", id).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+func (d *documentRepo) DeleteDocByIdWithUid(ctx context.Context, id, uid uint) error {
+	if id <= 0 || uid <= 0 {
+		return errors.New("id or uid is nil")
+	}
+
+	//同时删除doc_with_dm
+	tx := d.data.db.Begin()
+
+	if err := tx.Model(&biz.Document{}).Where("id = ? and uid = ?", id, uid).First(&biz.Document{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Delete(&biz.Document{}, id).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Delete(&biz.DocWithDm{}, "doc_id = ? ", id).Error; err != nil {
 		tx.Rollback()
 		return err
 	}

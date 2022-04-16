@@ -18,6 +18,7 @@ type Document struct {
 	LikeNum      uint   `gorm:"not null;default:0"`
 	IsLoadSearch bool   `gorm:"not null;default:false"`
 	IsSave       bool   `gorm:"not null;default:false"`
+	Content      string `gorm:"not null;type:text"`
 }
 
 type DocWithDm struct {
@@ -32,14 +33,16 @@ type IDocumentRepo interface {
 	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, error)
 	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
+	AddDocLikeNum(ctx context.Context, id uint, num uint) error
 	DeleteDocById(ctx context.Context, id uint) error
+	DeleteDocByIdWithUid(ctx context.Context, id, uid uint) error
 }
 
 type IDocumentUsecase interface {
 	GetUserAllDocs(ctx context.Context, uid uint) ([]*Document, error)
 	GetAllDocs(ctx context.Context) ([]*Document, error)
-	GetDmDocs(ctx context.Context, uid uint, did uint) ([]*Document, string, uint, error)
-	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*Document, string, error)
-	AddLikeDoc(ctx context.Context, docId uint) error
+	GetDmDocs(ctx context.Context, uid uint, did uint) ([]*Document, *Dimension, error)
+	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*Document, error)
+	AddLikeDoc(ctx context.Context, docId, num uint) error
 	DeleteUserDoc(ctx context.Context, docId uint, uid uint) error
 }

@@ -15,10 +15,12 @@ type Dimension struct {
 type IDimensionRepo interface {
 	GetDmById(ctx context.Context, did uint) (*Dimension, error)
 	GetDmsByUid(ctx context.Context, uid uint) ([]*Dimension, error)
+	GetDmByDidUid(ctx context.Context, did, uid uint) (*Dimension, error)
 	InsertDm(ctx context.Context, dm *Dimension) error
 	UpdateDm(ctx context.Context, dm *Dimension) error
 	DeleteDm(ctx context.Context, did uint) error
 	GetDmByUidTypeName(ctx context.Context, uid uint, typeStr string, name string) (*Dimension, error)
+	GetDmsByType(ctx context.Context, uid uint, typeStr string) ([]*Dimension, error)
 }
 
 type IDimensionUsecase interface {

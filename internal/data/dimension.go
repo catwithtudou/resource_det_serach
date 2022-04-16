@@ -40,6 +40,17 @@ func (d *dimensionRepo) GetDmsByUid(ctx context.Context, uid uint) ([]*biz.Dimen
 
 	return result, nil
 }
+func (d *dimensionRepo) GetDmByDidUid(ctx context.Context, did, uid uint) (*biz.Dimension, error) {
+	if did <= 0 || uid <= 0 {
+		return nil, errors.New("did or uid is nil")
+	}
+
+	result := &biz.Dimension{}
+	if err := d.data.db.Model(&biz.Dimension{}).Where("id = ? and uid = ?", did, uid).First(result).Error; err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 func (d *dimensionRepo) GetDmByUidTypeName(ctx context.Context, uid uint, typeStr string, name string) (*biz.Dimension, error) {
 	if uid <= 0 || typeStr == "" || name == "" {
 		return nil, errors.New("uid or type of name is empty")
@@ -73,4 +84,16 @@ func (d *dimensionRepo) DeleteDm(ctx context.Context, did uint) error {
 	}
 
 	return d.data.db.Delete(&biz.Dimension{}, did).Error
+}
+func (d *dimensionRepo) GetDmsByType(ctx context.Context, uid uint, typeStr string) ([]*biz.Dimension, error) {
+	if uid <= 0 || typeStr == "" {
+		return nil, errors.New("uid or typeStr is nil")
+	}
+
+	result := make([]*biz.Dimension, 0)
+	if err := d.data.db.Model(&biz.Dimension{}).Where("uid = ? and type = ?", uid, typeStr).Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

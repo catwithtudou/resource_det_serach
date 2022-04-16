@@ -68,9 +68,26 @@ func TestUpdateDocById(t *testing.T) {
 	}
 
 }
+
+func TestAddDocLikeNum(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	err := d.AddDocLikeNum(ctx, 1, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDeleteDocById(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
 	err := d.DeleteDocById(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestDeleteDocByIdWithUid(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	err := d.DeleteDocByIdWithUid(ctx, 1, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
