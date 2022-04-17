@@ -49,7 +49,7 @@ func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, erro
 	return res, nil
 }
 func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]*biz.Document, *biz.Dimension, error) {
-	if uid <= 0 || did <= 0 {
+	if uid < 0 || did <= 0 {
 		return nil, nil, errors.New("[GetDmDocs]uid or did is nil")
 	}
 
@@ -74,7 +74,7 @@ func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]
 	return docs, dmInfo, nil
 }
 func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*biz.Document, error) {
-	if uid <= 0 || typeStr == "" {
+	if uid < 0 || typeStr == "" {
 		return nil, errors.New("[GetAllDmTypeDocs]uid or typeStr is nil")
 	}
 
@@ -111,7 +111,6 @@ func (d *documentUsecase) AddLikeDoc(ctx context.Context, docId uint, num uint) 
 
 	return nil
 }
-
 func (d *documentUsecase) DeleteUserDoc(ctx context.Context, docId uint, uid uint) error {
 	if docId <= 0 || uid <= 0 {
 		return errors.New("[DeleteUserDoc]docId or uid is nil")

@@ -23,12 +23,7 @@ func NewDimensionService(dimension biz.IDimensionUsecase, logger *zap.SugaredLog
 }
 
 func (d *DimensionService) AddUserDm(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		d.log.Errorf("[DimensionService-AddUserDm]failed to get uid")
-		c.JSON(http.StatusOK, api.UserAuthErr)
-		return
-	}
+	uid, _ := c.Get("uid")
 
 	var req v1.DimensionAddUserDmReq
 	if err := c.ShouldBind(&req); err != nil {
@@ -37,7 +32,7 @@ func (d *DimensionService) AddUserDm(c *gin.Context) {
 		return
 	}
 
-	if !utils.CheckType(req.Type) || len(req.Name) > 50 {
+	if !utils.CheckUserType(req.Type) || len(req.Name) > 50 {
 		d.log.Errorf("[DimensionService-AddUserDm]illegal params")
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
@@ -66,12 +61,7 @@ func (d *DimensionService) GetUserDm(c *gin.Context) {
 	}
 
 	if uid <= 0 {
-		getUid, ok := c.Get("uid")
-		if !ok || getUid.(uint) <= 0 {
-			d.log.Errorf("[DimensionService-GetUserDm]failed to get uid")
-			c.JSON(http.StatusOK, api.UserAuthErr)
-			return
-		}
+		getUid, _ := c.Get("uid")
 		uid = getUid.(uint)
 	}
 
@@ -102,12 +92,7 @@ func (d *DimensionService) GetUserDm(c *gin.Context) {
 }
 
 func (d *DimensionService) UpdateUserDm(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		d.log.Errorf("[DimensionService-UpdateUserDm]failed to get uid")
-		c.JSON(http.StatusOK, api.UserAuthErr)
-		return
-	}
+	uid, _ := c.Get("uid")
 
 	var req v1.DimensionUpdateUserDmReq
 	if err := c.ShouldBind(&req); err != nil {
@@ -134,12 +119,7 @@ func (d *DimensionService) UpdateUserDm(c *gin.Context) {
 }
 
 func (d *DimensionService) DeleteUserDm(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		d.log.Errorf("[DimensionService-DeleteUserDm]failed to get uid")
-		c.JSON(http.StatusOK, api.UserAuthErr)
-		return
-	}
+	uid, _ := c.Get("uid")
 
 	var req v1.DimensionDeleteUserDmReq
 	if err := c.ShouldBind(&req); err != nil {

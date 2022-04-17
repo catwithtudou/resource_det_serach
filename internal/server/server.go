@@ -32,5 +32,14 @@ func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dime
 	r.PUT("/dimension", dimensionService.UpdateUserDm)
 	r.DELETE("/dimension", dimensionService.DeleteUserDm)
 
+	r.GET("/resource/user/all", documentService.GetUserAllDocs)
+	r.GET("/resource/all", documentService.GetAllDocs)
+	r.GET("/resource/user/dimension", documentService.GetUserDimensionDocs)
+	r.GET("/resource/user/dimension/all", documentService.GetUserAllDimensionDocs)
+	r.GET("/resource/dimension", documentService.GetDimensionDocs)
+	r.GET("/resource/dimension/all", documentService.GetAllDimensionDocs)
+	r.PUT("/resource/like", documentService.AddLikeDoc)
+	r.DELETE("/resource", documentService.DeleteUserDoc)
+
 	return &Server{HttpEngine: r}
 }

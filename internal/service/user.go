@@ -134,14 +134,7 @@ func (u *UserService) GetUserInfo(c *gin.Context) {
 	}
 
 	if uid <= 0 {
-		getUid, ok := c.Get("uid")
-		if !ok || getUid.(uint) <= 0 {
-			u.log.Errorf("[UserService-GetUserInfo]failed to get uid")
-			c.JSON(http.StatusOK, v1.UserGetUserInfoResp{
-				RespCommon: api.UserAuthErr,
-			})
-			return
-		}
+		getUid, _ := c.Get("uid")
 		uid = getUid.(uint)
 	}
 
@@ -171,12 +164,7 @@ func (u *UserService) GetUserInfo(c *gin.Context) {
 }
 
 func (u *UserService) UpdateUserInfo(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		u.log.Errorf("[UserService-UpdateUserInfo]failed to get uid")
-		c.JSON(http.StatusOK, api.UserAuthErr)
-		return
-	}
+	uid, _ := c.Get("uid")
 
 	var req v1.UpdateUserInfoReq
 	if err := c.ShouldBind(&req); err != nil {
@@ -206,12 +194,7 @@ func (u *UserService) UpdateUserInfo(c *gin.Context) {
 }
 
 func (u *UserService) UploadUserAvatar(c *gin.Context) {
-	uid, ok := c.Get("uid")
-	if !ok || uid.(uint) <= 0 {
-		u.log.Errorf("[UserService-UploadUserAvatar]failed to get uid")
-		c.JSON(http.StatusOK, api.UserAuthErr)
-		return
-	}
+	uid, _ := c.Get("uid")
 
 	file, err := c.FormFile("avatar")
 	if err != nil {

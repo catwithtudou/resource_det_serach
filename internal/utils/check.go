@@ -28,9 +28,14 @@ func CheckPswd(str string) bool {
 	return result
 }
 
-func CheckType(str string) bool {
+func CheckUserType(str string) bool {
 	types := []string{"tag", "category"}
 	// part 类型只能官方手动创建
+	return Contains(types, str)
+}
+
+func CheckAllType(str string) bool {
+	types := []string{"tag", "category", "part"}
 	return Contains(types, str)
 }
 

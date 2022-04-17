@@ -43,6 +43,13 @@ func AuthJwtMw(logger *zap.SugaredLogger) gin.HandlerFunc {
 			return
 		}
 
+		if claim.Uid <= 0 {
+			logger.Errorf("[AuthJwtMw]invalid uid")
+			c.JSON(http.StatusOK, api.UserAuthErr)
+			c.Abort()
+			return
+		}
+
 		c.Set("uid", claim.Uid)
 		c.Set("loginTs", claim.LoginTs)
 		c.Next()
