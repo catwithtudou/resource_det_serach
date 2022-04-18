@@ -34,7 +34,16 @@ func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint) ([]*biz.
 		return nil, nil
 	}
 
-	return res, nil
+	result := make([]*biz.Document, 0, len(res))
+	for _, v := range result {
+		// if document is_load_search and  is_sava are false,it should be continued
+		if !v.IsLoadSearch || !v.IsSave {
+			continue
+		}
+		result = append(result, v)
+	}
+
+	return result, nil
 }
 func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, error) {
 
@@ -46,7 +55,16 @@ func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, erro
 		return nil, nil
 	}
 
-	return res, nil
+	result := make([]*biz.Document, 0, len(res))
+	for _, v := range result {
+		// if document is_load_search and  is_sava are false,it should be continued
+		if !v.IsLoadSearch || !v.IsSave {
+			continue
+		}
+		result = append(result, v)
+	}
+
+	return result, nil
 }
 func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]*biz.Document, *biz.Dimension, error) {
 	if uid < 0 || did <= 0 {
@@ -71,7 +89,16 @@ func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]
 		return nil, dmInfo, nil
 	}
 
-	return docs, dmInfo, nil
+	reDocs := make([]*biz.Document, 0, len(docs))
+	for _, v := range reDocs {
+		// if document is_load_search and  is_sava are false,it should be continued
+		if !v.IsLoadSearch || !v.IsSave {
+			continue
+		}
+		reDocs = append(reDocs, v)
+	}
+
+	return reDocs, dmInfo, nil
 }
 func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*biz.Document, error) {
 	if uid < 0 || typeStr == "" {
@@ -95,7 +122,13 @@ func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeSt
 		if err != nil {
 			return nil, fmt.Errorf("[GetAllDmTypeDocs]failed to GetDocsWithDid:err=[%+v]", err)
 		}
-		result[v.Name] = docs
+		for _, vv := range docs {
+			// if document is_load_search and  is_sava are false,it should be continued
+			if !vv.IsLoadSearch || !vv.IsSave {
+				continue
+			}
+			result[v.Name] = append(result[v.Name], vv)
+		}
 	}
 
 	return result, nil
