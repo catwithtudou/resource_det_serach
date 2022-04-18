@@ -60,8 +60,22 @@ func UploadByteData(ctx context.Context, data []byte, key string) (string, error
 	return ret.Key, nil
 }
 
+func UploadPartByteData(ctx context.Context, data []byte, key string) (string, error) {
+	ret := storage.PutRet{}
+	err := storage.NewResumeUploaderV2(config).Put(context.Background(), &ret, getUpTokenCache(), key, bytes.NewReader(data), int64(len(data)), nil)
+	if err != nil {
+		return "", err
+	}
+
+	return ret.Key, nil
+}
+
 func GenAvatarKey(uid uint) string {
 	return fmt.Sprintf("resource_det_search/%d_%d_avater", uid, time.Now().Unix())
+}
+
+func GetDocKey(fileName string, uid uint) string {
+	return fmt.Sprintf("resource_det_search/doc/%d_%s", uid, fileName)
 }
 
 func GenFileLink(key string) string {
