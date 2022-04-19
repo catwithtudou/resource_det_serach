@@ -93,7 +93,7 @@ func DetXlsxByUnidoc(fileBytes []byte) (string, error) {
 func DetMd(fileBytes []byte) (string, error) {
 	unsafe := blackfriday.MarkdownCommon(fileBytes)
 	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
-	return string(html), nil
+	return DelMdTags(string(html)), nil
 }
 
 func DelPunctuation(p string) string {
@@ -102,4 +102,12 @@ func DelPunctuation(p string) string {
 	sReg := regexp.MustCompile("\\s+")
 	result = sReg.ReplaceAllString(result, " ")
 	return result
+}
+
+func DelMdTags(p string) string {
+	reg := regexp.MustCompile("<[^>]*>")
+	result := reg.ReplaceAllString(p, "")
+	nReg := regexp.MustCompile("\\n")
+	result = nReg.ReplaceAllString(result, " ")
+	return DelPunctuation(result)
 }

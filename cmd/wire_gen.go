@@ -29,7 +29,8 @@ func initApp(confData *conf.Data, sugaredLogger *zap.SugaredLogger) (*server.Ser
 	iDimensionUsecase := usecase.NewDimensionUsecase(iDimensionRepo, iUserRepo)
 	dimensionService := service.NewDimensionService(iDimensionUsecase, sugaredLogger)
 	iDocumentRepo := data.NewDocumentRepo(dataData)
-	iDocumentUsecase := usecase.NewDocumentUsecase(iDocumentRepo, iUserRepo, iDimensionRepo)
+	iClassDocumentRepo := data.NewClassDocumentRepo(dataData)
+	iDocumentUsecase := usecase.NewDocumentUsecase(iDocumentRepo, iUserRepo, iDimensionRepo, iClassDocumentRepo, sugaredLogger)
 	documentService := service.NewDocumentService(iDocumentUsecase, sugaredLogger)
 	serverServer := server.NewServer(sugaredLogger, userService, dimensionService, documentService)
 	return serverServer, func() {

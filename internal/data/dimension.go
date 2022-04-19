@@ -122,3 +122,15 @@ func (d *dimensionRepo) GetUidTypeInIds(ctx context.Context, ids []uint) ([]*biz
 	return result, nil
 
 }
+func (d *dimensionRepo) GetDmsInIds(ctx context.Context, ids []uint) ([]*biz.Dimension, error) {
+	if len(ids) == 0 {
+		return nil, errors.New("uid or typeStr or ids is nil")
+	}
+
+	result := make([]*biz.Dimension, 0)
+	if err := d.data.db.Model(&biz.Dimension{}).Where("id IN ?", ids).Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

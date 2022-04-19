@@ -4,24 +4,30 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"mime/multipart"
 	"resource_det_search/internal/biz"
 	"resource_det_search/internal/constants"
 	"resource_det_search/internal/utils"
+	"time"
 )
 
 type documentUsecase struct {
 	repo     biz.IDocumentRepo
 	userRepo biz.IUserRepo
 	dmRepo   biz.IDimensionRepo
+	cdRepo   biz.IClassDocumentRepo
+	logger   *zap.SugaredLogger
 }
 
-func NewDocumentUsecase(repo biz.IDocumentRepo, userRepo biz.IUserRepo, dmRepo biz.IDimensionRepo) biz.IDocumentUsecase {
+func NewDocumentUsecase(repo biz.IDocumentRepo, userRepo biz.IUserRepo, dmRepo biz.IDimensionRepo, cdRepo biz.IClassDocumentRepo, logger *zap.SugaredLogger) biz.IDocumentUsecase {
 	return &documentUsecase{
 		repo:     repo,
 		userRepo: userRepo,
 		dmRepo:   dmRepo,
+		cdRepo:   cdRepo,
+		logger:   logger,
 	}
 }
 
@@ -171,11 +177,11 @@ func (d *documentUsecase) UploadUserDocument(ctx context.Context, doc *biz.Docum
 	if partDm == nil || partDm.Type != string(constants.Part) {
 		return constants.DefaultErr, fmt.Errorf("[UploadUserDocument]illegal part id:dm=[%+v]", utils.JsonToString(partDm))
 	}
-	err = d.checkDmIdsIllegal(ctx, doc.Uid, constants.Category, categories)
+	categoriesDm, err := d.checkDmIdsIllegal(ctx, doc.Uid, constants.Category, categories)
 	if err != nil {
 		return constants.DefaultErr, fmt.Errorf("[UploadUserDocument]illegal category id:err=[%+v],ids=[%+v]", err, categories)
 	}
-	err = d.checkDmIdsIllegal(ctx, doc.Uid, constants.Tag, tags)
+	tagsDm, err := d.checkDmIdsIllegal(ctx, doc.Uid, constants.Tag, tags)
 	if err != nil {
 		return constants.DefaultErr, fmt.Errorf("[UploadUserDocument]illegal tag id:err=[%+v],ids=[%+v]", err, tags)
 	}
@@ -216,7 +222,8 @@ func (d *documentUsecase) UploadUserDocument(ctx context.Context, doc *biz.Docum
 		return constants.DefaultErr, fmt.Errorf("[UploadUserDocument]failed to UpdateDocById:err=[%+v]", err)
 	}
 
-	// todo:async goroutine handle:det file details (with update the database) and upload the es search
+	// async goroutine handle:det file details (with update the database) and upload the es search
+	go d.uploadDetSearch(ctx, docId, doc, partDm, categoriesDm, tagsDm, fileBytes)
 
 	return constants.Success, nil
 }
@@ -230,74 +237,87 @@ func (d *documentUsecase) DetFile(ctx context.Context, fileType string, fileData
 		return "", fmt.Errorf("[DetFile]failed to MultipartFileHeaderToBytes:err=[%+v]", err)
 	}
 
-	// 直接识别部分
-	if utils.DetByteTypesContains(fileType) {
-		detType := constants.DetByteType(fileType)
-		switch detType {
-		case constants.Txt:
-			return string(fileBytes), nil
-		case constants.Docx:
-			txt, err := utils.DetDocxByUnidoc(fileBytes)
-			if err != nil {
-				return "", fmt.Errorf("[DetFile]failed to DetDocxByUnidoc:err=[%+v]", err)
-			}
-			return txt, nil
-		case constants.Pptx:
-			txt, err := utils.DetPptxByUnidoc(fileBytes)
-			if err != nil {
-				return "", fmt.Errorf("[DetFile]failed to DetPptxByUnidoc:err=[%+v]", err)
-			}
-			return txt, nil
-		case constants.Xlsx:
-			txt, err := utils.DetXlsxByUnidoc(fileBytes)
-			if err != nil {
-				return "", fmt.Errorf("[DetFile]failed to DetXlsxByUnidoc:err=[%+v]", err)
-			}
-			return txt, nil
-		case constants.Md:
-			return utils.DetMd(fileBytes)
-		}
-
-	}
-
-	// OCR识别部分
-	if utils.DetOcrTypesContains(fileType) {
-
-	}
-
-	return "", nil
-}
-
-func (d *documentUsecase) uploadSearch(ctx context.Context, doc *biz.Document) error {
-	fileType := doc.Type
-
-	// 直接识别部分
-	if fileType == "" {
-
-	}
-
-	// OCR识别部分
-	if fileType == "" {
-
-	}
-
-	return nil
-}
-
-func (d *documentUsecase) checkDmIdsIllegal(ctx context.Context, uid uint, typeStr constants.DmType, ids []uint) error {
-	if len(ids) <= 0 {
-		return nil
-	}
-
-	result, err := d.dmRepo.GetUidTypeInIds(ctx, ids)
+	res, err := d.detFile(fileType, fileBytes)
 	if err != nil {
-		return err
-	}
-	if len(result) != 1 || result[0].Uid != uid || result[0].Type != string(typeStr) {
-		return errors.New("illegal dm id")
+		return "", fmt.Errorf("[DetFile]failed to detFile:err=[%+v],fileType=[%+v]", err, fileType)
 	}
 
-	return nil
+	return res, nil
+}
+func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *biz.Document, part *biz.Dimension, categories []*biz.Dimension, tags []*biz.Dimension, fileData []byte) {
+	// det file
+	res, err := d.detFile(doc.Type, fileData)
+	if err != nil {
+		d.logger.Errorf("[uploadDetSearch]failed to detFile:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
+		return
+	}
+
+	// upload search file
+	user, err := d.userRepo.GetUserById(ctx, doc.Uid)
+	if err != nil {
+		d.logger.Errorf("[uploadDetSearch]failed to GetUserById:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
+		return
+	}
+	cd := &biz.ClassDocument{
+		Id:         docId,
+		Title:      doc.Title,
+		Content:    res,
+		Intro:      doc.Intro,
+		Part:       part.Name,
+		FileType:   doc.Type,
+		Username:   user.Name,
+		UploadDate: time.Now().Unix(),
+	}
+	if len(categories) > 0 {
+		cd.Categories = make([]string, 0, len(categories))
+		for _, v := range categories {
+			cd.Categories = append(cd.Categories, v.Name)
+		}
+	}
+	if len(tags) > 0 {
+		cd.Tags = make([]string, 0, len(tags))
+		for _, v := range tags {
+			cd.Tags = append(cd.Tags, v.Name)
+		}
+	}
+
+	err = d.cdRepo.InsertDoc(ctx, docId, cd)
+	if err != nil {
+		d.logger.Errorf("[uploadDetSearch]failed to InsertDoc:err=[%+v],doc=[%+v],cd=[%+v]", err, utils.JsonToString(doc), utils.JsonToString(cd))
+		return
+	}
+
+	// update docRepo
+	err = d.repo.UpdateDocById(ctx, &biz.Document{
+		Model:        gorm.Model{ID: docId},
+		IsLoadSearch: true,
+		Content:      res,
+	})
+	if err != nil {
+		d.logger.Errorf("[uploadDetSearch]failed to UpdateDocById:err=[%+v],doc=[%+v],cd=[%+v]", err, utils.JsonToString(doc), utils.JsonToString(cd))
+		return
+	}
+
+	return
+}
+
+func (d *documentUsecase) checkDmIdsIllegal(ctx context.Context, uid uint, typeStr constants.DmType, ids []uint) ([]*biz.Dimension, error) {
+	if len(ids) <= 0 {
+		return nil, nil
+	}
+
+	result, err := d.dmRepo.GetDmsInIds(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range result {
+		if v.Uid != uid || v.Type != string(typeStr) {
+			return nil, errors.New("illegal dm id")
+		}
+	}
+
+	return result, nil
 }
 
 func (d *documentUsecase) allDmTypeIdsToIds(part uint, categories []uint, tags []uint) []uint {
@@ -311,4 +331,49 @@ func (d *documentUsecase) allDmTypeIdsToIds(part uint, categories []uint, tags [
 	}
 
 	return result
+}
+
+func (d *documentUsecase) detFile(fileType string, fileBytes []byte) (string, error) {
+	if utils.DetByteTypesContains(fileType) {
+		detType := constants.DetByteType(fileType)
+		switch detType {
+		case constants.Txt:
+			return string(fileBytes), nil
+		case constants.Docx:
+			txt, err := utils.DetDocxByUnidoc(fileBytes)
+			if err != nil {
+				return "", err
+			}
+			return txt, nil
+		case constants.Pptx:
+			txt, err := utils.DetPptxByUnidoc(fileBytes)
+			if err != nil {
+				return "", err
+			}
+			return txt, nil
+		case constants.Xlsx:
+			txt, err := utils.DetXlsxByUnidoc(fileBytes)
+			if err != nil {
+				return "", err
+			}
+			return txt, nil
+		case constants.Md:
+			return utils.DetMd(fileBytes)
+		default:
+			return "", errors.New("det byte type not supported")
+		}
+
+	}
+
+	// OCR识别部分
+	if utils.DetOcrTypesContains(fileType) {
+		detType := constants.DetOcrType(fileType)
+		switch detType {
+		default:
+			return "", errors.New("det ocr type not supported")
+		}
+
+	}
+
+	return "", errors.New("det doc type not supported")
 }

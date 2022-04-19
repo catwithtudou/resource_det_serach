@@ -23,6 +23,7 @@ type IDimensionRepo interface {
 	GetDmsByType(ctx context.Context, uid uint, typeStr string) ([]*Dimension, error)
 	GetUidsInIds(ctx context.Context, ids []uint) ([]uint, error)
 	GetUidTypeInIds(ctx context.Context, ids []uint) ([]*Dimension, error)
+	GetDmsInIds(ctx context.Context, ids []uint) ([]*Dimension, error)
 }
 
 type IDimensionUsecase interface {
