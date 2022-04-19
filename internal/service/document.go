@@ -439,3 +439,32 @@ func (d *DocumentService) DeleteUserDoc(c *gin.Context) {
 	c.JSON(http.StatusOK, api.Success)
 	return
 }
+
+func (d *DocumentService) DetUserDoc(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		d.log.Errorf("[DocumentService-DetUserDoc]failed to FormFile:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormFileErr)
+		return
+	}
+
+	fileType, ok := utils.CheckDocFileType(file.Filename)
+	if !ok {
+		d.log.Errorf("[DocumentService-DetUserDoc]failed to FormFile:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FileTypeErr)
+		return
+	}
+
+	detail, err := d.doc.DetFile(c, fileType, file)
+	if err != nil {
+		d.log.Errorf("[DocumentService-DetUserDoc]failed to DetFile:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.DefaultErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, v1.DetUserDocResp{
+		RespCommon: api.Success,
+		Data:       detail,
+	})
+	return
+}

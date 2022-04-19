@@ -7,6 +7,7 @@ option go_package = ".;conf";
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Unidoc unidoc = 3;
 }
 
 message Server {
@@ -29,4 +30,8 @@ message Data {
   }
   Database database = 1;
   Qiniuyun qiniuyun = 2;
+}
+
+message Unidoc{
+  string license = 1;
 }

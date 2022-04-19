@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/dlclark/regexp2"
 	"regexp"
+	"resource_det_search/internal/constants"
 	"strings"
 )
 
@@ -64,7 +65,7 @@ func CheckDocFileType(fileName string) (string, bool) {
 
 	// 直接识别：doc/docx、ppt/pptx、md、txt
 	// OCR识别：jpg/jpeg、png、pdf
-	if !Contains([]string{"doc", "docx", "ppt", "pptx", "md", "txt", "jpg", "jpeg", "png", "pdf"}, fileType) {
+	if !DetOcrTypesContains(fileType) && !DetByteTypesContains(fileType) {
 		return "", false
 	}
 
@@ -72,7 +73,29 @@ func CheckDocFileType(fileName string) (string, bool) {
 }
 
 func CheckDocFileSize(fileSize int64) bool {
-	return fileSize < 1024*1024*50
+	return fileSize < 1024*1024*50 && fileSize > 0
+}
+
+func DetByteTypesContains(fileType string) bool {
+	fType := constants.DetByteType(fileType)
+	for _, e := range constants.DetByteTypes {
+		if fType == e {
+			return true
+		}
+	}
+
+	return false
+}
+
+func DetOcrTypesContains(fileType string) bool {
+	fType := constants.DetOcrType(fileType)
+	for _, e := range constants.DetOcrTypes {
+		if fType == e {
+			return true
+		}
+	}
+
+	return false
 }
 
 func Contains(elems []string, elem string) bool {

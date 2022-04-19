@@ -62,6 +62,7 @@ func main() {
 	cf := InitConf(FlagConf)
 
 	utils.NewQny(cf.Data.Qiniuyun.Bucket, cf.Data.Qiniuyun.Access, cf.Data.Qiniuyun.Secret, cf.Data.Qiniuyun.Domain)
+	utils.NewUnidoc(cf.Unidoc.License)
 
 	app, _, err := initApp(cf.Data, logger)
 	if err != nil {

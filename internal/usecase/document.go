@@ -159,8 +159,8 @@ func (d *documentUsecase) DeleteUserDoc(ctx context.Context, docId uint, uid uin
 	return nil
 }
 func (d *documentUsecase) UploadUserDocument(ctx context.Context, doc *biz.Document, part uint, categories []uint, tags []uint, fileData *multipart.FileHeader) (constants.ErrCode, error) {
-	if doc == nil || part <= 0 {
-		return constants.DefaultErr, errors.New("[UploadUserDocument]doc or dmIds is nil")
+	if doc == nil || part <= 0 || fileData == nil {
+		return constants.DefaultErr, errors.New("[UploadUserDocument]doc or dmIds or fileData is nil")
 	}
 
 	// select the dmIds illegal
@@ -220,21 +220,52 @@ func (d *documentUsecase) UploadUserDocument(ctx context.Context, doc *biz.Docum
 
 	return constants.Success, nil
 }
+func (d *documentUsecase) DetFile(ctx context.Context, fileType string, fileData *multipart.FileHeader) (string, error) {
+	if fileData == nil {
+		return "", errors.New("[DetFile]fileData is nil")
+	}
 
-func (d *documentUsecase) detFile(ctx context.Context, doc *biz.Document) error {
-	fileType := doc.Type
+	fileBytes, err := utils.MultipartFileHeaderToBytes(fileData)
+	if err != nil {
+		return "", fmt.Errorf("[DetFile]failed to MultipartFileHeaderToBytes:err=[%+v]", err)
+	}
 
 	// 直接识别部分
-	if fileType == "" {
+	if utils.DetByteTypesContains(fileType) {
+		detType := constants.DetByteType(fileType)
+		switch detType {
+		case constants.Txt:
+			return string(fileBytes), nil
+		case constants.Docx:
+			txt, err := utils.DetDocxByUnidoc(fileBytes)
+			if err != nil {
+				return "", fmt.Errorf("[DetFile]failed to DetDocxByUnidoc:err=[%+v]", err)
+			}
+			return txt, nil
+		case constants.Pptx:
+			txt, err := utils.DetPptxByUnidoc(fileBytes)
+			if err != nil {
+				return "", fmt.Errorf("[DetFile]failed to DetPptxByUnidoc:err=[%+v]", err)
+			}
+			return txt, nil
+		case constants.Xlsx:
+			txt, err := utils.DetXlsxByUnidoc(fileBytes)
+			if err != nil {
+				return "", fmt.Errorf("[DetFile]failed to DetXlsxByUnidoc:err=[%+v]", err)
+			}
+			return txt, nil
+		case constants.Md:
+			return utils.DetMd(fileBytes)
+		}
 
 	}
 
 	// OCR识别部分
-	if fileType == "" {
+	if utils.DetOcrTypesContains(fileType) {
 
 	}
 
-	return nil
+	return "", nil
 }
 
 func (d *documentUsecase) uploadSearch(ctx context.Context, doc *biz.Document) error {

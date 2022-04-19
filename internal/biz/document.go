@@ -50,4 +50,5 @@ type IDocumentUsecase interface {
 	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*Document, error)
 	AddLikeDoc(ctx context.Context, docId, num uint) error
 	DeleteUserDoc(ctx context.Context, docId uint, uid uint) error
+	DetFile(ctx context.Context, fileType string, fileData *multipart.FileHeader) (string, error)
 }

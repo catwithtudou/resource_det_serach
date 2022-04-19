@@ -10,3 +10,5 @@ data:
     secret:
     bucket:
     domain:
+unidoc:
+  license:

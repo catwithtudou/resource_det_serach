@@ -90,3 +90,8 @@ type UploadUserDocumentReq struct {
 	Categories string `form:"categories"  json:"categories"`
 	Tags       string `form:"tags"  json:"tags"`
 }
+
+type DetUserDocResp struct {
+	api.RespCommon
+	Data string `json:"data"`
+}
