@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"encoding/json"
 	"github.com/dlclark/regexp2"
 	"regexp"
+	"strings"
 )
 
 func CheckEmail(email string) bool {
@@ -37,6 +39,40 @@ func CheckUserType(str string) bool {
 func CheckAllType(str string) bool {
 	types := []string{"tag", "category", "part"}
 	return Contains(types, str)
+}
+
+func CheckDocTypeStr(str string) ([]uint, bool) {
+	if str == "" {
+		return nil, true
+	}
+
+	var result []uint
+	err := json.Unmarshal([]byte(str), &result)
+	if err != nil {
+		return nil, false
+	}
+	return result, true
+}
+
+func CheckDocFileType(fileName string) (string, bool) {
+	slices := strings.Split(fileName, ".")
+	if len(slices) < 2 {
+		return "", false
+	}
+
+	fileType := slices[len(slices)-1]
+
+	// 直接识别：doc/docx、ppt/pptx、md、txt
+	// OCR识别：jpg/jpeg、png、pdf
+	if !Contains([]string{"doc", "docx", "ppt", "pptx", "md", "txt", "jpg", "jpeg", "png", "pdf"}, fileType) {
+		return "", false
+	}
+
+	return fileType, true
+}
+
+func CheckDocFileSize(fileSize int64) bool {
+	return fileSize < 1024*1024*50
 }
 
 func Contains(elems []string, elem string) bool {

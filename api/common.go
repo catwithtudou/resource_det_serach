@@ -34,6 +34,16 @@ var (
 		Msg:  "form file err",
 	}
 
+	FileTypeErr = RespCommon{
+		Code: 10006,
+		Msg:  "file type not supported",
+	}
+
+	FileSizeErr = RespCommon{
+		Code: 10007,
+		Msg:  "file size not supported",
+	}
+
 	UserEmailNotExist = RespCommon{
 		Code: 11001,
 		Msg:  "user email is not exist",
@@ -53,5 +63,15 @@ var (
 	UserSidExist = RespCommon{
 		Code: 11005,
 		Msg:  "user sid is exist",
+	}
+
+	DocTitleExist = RespCommon{
+		Code: 12001,
+		Msg:  "user doc title is exist",
+	}
+
+	DocUploadQnyErr = RespCommon{
+		Code: 12002,
+		Msg:  "user upload doc qny err",
 	}
 )

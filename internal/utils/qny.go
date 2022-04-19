@@ -74,8 +74,8 @@ func GenAvatarKey(uid uint) string {
 	return fmt.Sprintf("resource_det_search/%d_%d_avater", uid, time.Now().Unix())
 }
 
-func GetDocKey(fileName string, uid uint) string {
-	return fmt.Sprintf("resource_det_search/doc/%d_%s", uid, fileName)
+func GenDocKey(docId uint, uid uint) string {
+	return fmt.Sprintf("resource_det_search/doc/%d_%d_%d", uid, docId, time.Now().Unix())
 }
 
 func GenFileLink(key string) string {

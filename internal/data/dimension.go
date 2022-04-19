@@ -97,3 +97,28 @@ func (d *dimensionRepo) GetDmsByType(ctx context.Context, uid uint, typeStr stri
 
 	return result, nil
 }
+func (d *dimensionRepo) GetUidsInIds(ctx context.Context, ids []uint) ([]uint, error) {
+	if len(ids) == 0 {
+		return nil, errors.New("ids is nil")
+	}
+
+	result := make([]uint, 0)
+	if err := d.data.db.Model(&biz.Dimension{}).Select("uid").Where("id IN ?", ids).Group("uid").Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+func (d *dimensionRepo) GetUidTypeInIds(ctx context.Context, ids []uint) ([]*biz.Dimension, error) {
+	if len(ids) == 0 {
+		return nil, errors.New("uid or typeStr or ids is nil")
+	}
+
+	result := make([]*biz.Dimension, 0)
+	if err := d.data.db.Model(&biz.Dimension{}).Select("uid,type").Where("id IN ?", ids).Group("uid,type").Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+
+}

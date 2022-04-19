@@ -17,3 +17,27 @@ func TestCheckPswd(t *testing.T) {
 	fmt.Println(CheckPswd(d))
 	fmt.Println(CheckPswd(e))
 }
+
+func TestCheckDocTypeStr(t *testing.T) {
+	res, ok := CheckDocTypeStr("[1,2,3]")
+	if !ok {
+		t.Fatal("wrong")
+	}
+	fmt.Println(res)
+	_, ok = CheckDocTypeStr("1,2,3")
+	if ok {
+		t.Fatal("wrong")
+	}
+	_, ok = CheckDocTypeStr("1,2,3.2,-1")
+	if ok {
+		t.Fatal("wrong")
+	}
+	_, ok = CheckDocTypeStr("[1,2,3.2]")
+	if ok {
+		t.Fatal("wrong")
+	}
+	_, ok = CheckDocTypeStr("[1,2,-1]")
+	if ok {
+		t.Fatal("wrong")
+	}
+}

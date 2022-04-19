@@ -17,6 +17,38 @@ func NewDocumentRepo(data *Data) biz.IDocumentRepo {
 	}
 }
 
+func (d *documentRepo) InsertDocWithDms(ctx context.Context, doc *biz.Document, dmIds []uint) (uint, error) {
+	if doc == nil {
+		return 0, errors.New("doc is nil")
+	}
+
+	if len(dmIds) == 0 {
+		return 0, d.data.db.Create(doc).Error
+	}
+
+	tx := d.data.db.Begin()
+
+	if err := d.data.db.Create(doc).Error; err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	docWithDms := make([]*biz.DocWithDm, 0, len(dmIds))
+	for _, v := range dmIds {
+		docWithDms = append(docWithDms, &biz.DocWithDm{
+			DocId: doc.ID,
+			Did:   v,
+		})
+	}
+
+	if err := d.data.db.Create(&docWithDms).Error; err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	tx.Commit()
+	return doc.ID, nil
+}
 func (d *documentRepo) GetDocs(ctx context.Context) ([]*biz.Document, error) {
 	docs := make([]*biz.Document, 0)
 	if err := d.data.db.Model(&biz.Document{}).Find(&docs).Error; err != nil {
@@ -67,6 +99,7 @@ func (d *documentRepo) UpdateDocById(ctx context.Context, doc *biz.Document) err
 	}
 
 	return d.data.db.Model(&doc).Updates(biz.Document{
+		Dir:   doc.Dir,
 		Intro: doc.Intro,
 		Title: doc.Title,
 		//DownloadNum:  doc.DownloadNum,
@@ -90,7 +123,7 @@ func (d *documentRepo) AddDocLikeNum(ctx context.Context, id uint, num uint) err
 		Model: gorm.Model{ID: id},
 	}).UpdateColumn("like_num", gorm.Expr("like_num + ?", num)).Error
 }
-func (d *documentRepo) DeleteDocById(ctx context.Context, id uint) error {
+func (d *documentRepo) DeleteDocWithDmsById(ctx context.Context, id uint) error {
 	if id <= 0 {
 		return errors.New("id is nil")
 	}
@@ -111,7 +144,7 @@ func (d *documentRepo) DeleteDocById(ctx context.Context, id uint) error {
 	tx.Commit()
 	return nil
 }
-func (d *documentRepo) DeleteDocByIdWithUid(ctx context.Context, id, uid uint) error {
+func (d *documentRepo) DeleteDocWithDmsByIdWithUid(ctx context.Context, id, uid uint) error {
 	if id <= 0 || uid < 0 {
 		return errors.New("id or uid is nil")
 	}
@@ -136,4 +169,11 @@ func (d *documentRepo) DeleteDocByIdWithUid(ctx context.Context, id, uid uint) e
 
 	tx.Commit()
 	return nil
+}
+func (d *documentRepo) GetSaveDocWithNameAndTitle(ctx context.Context, uid uint, title string) error {
+	if uid <= 0 || title == "" {
+		return errors.New("name or title is nil")
+	}
+
+	return d.data.db.Model(&biz.Document{}).Where("uid = ? AND is_save = 1 AND title = ?", uid, title).First(&biz.Document{}).Error
 }

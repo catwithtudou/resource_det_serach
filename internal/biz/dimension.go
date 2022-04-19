@@ -21,6 +21,8 @@ type IDimensionRepo interface {
 	DeleteDm(ctx context.Context, did uint) error
 	GetDmByUidTypeName(ctx context.Context, uid uint, typeStr string, name string) (*Dimension, error)
 	GetDmsByType(ctx context.Context, uid uint, typeStr string) ([]*Dimension, error)
+	GetUidsInIds(ctx context.Context, ids []uint) ([]uint, error)
+	GetUidTypeInIds(ctx context.Context, ids []uint) ([]*Dimension, error)
 }
 
 type IDimensionUsecase interface {

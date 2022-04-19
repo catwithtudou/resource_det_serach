@@ -3,6 +3,8 @@ package biz
 import (
 	"context"
 	"gorm.io/gorm"
+	"mime/multipart"
+	"resource_det_search/internal/constants"
 )
 
 type Document struct {
@@ -28,17 +30,20 @@ type DocWithDm struct {
 }
 
 type IDocumentRepo interface {
+	InsertDocWithDms(ctx context.Context, doc *Document, dmIds []uint) (uint, error)
 	GetDocs(ctx context.Context) ([]*Document, error)
 	GetDocById(ctx context.Context, id uint) (*Document, error)
 	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, error)
 	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
 	AddDocLikeNum(ctx context.Context, id uint, num uint) error
-	DeleteDocById(ctx context.Context, id uint) error
-	DeleteDocByIdWithUid(ctx context.Context, id, uid uint) error
+	DeleteDocWithDmsById(ctx context.Context, id uint) error
+	DeleteDocWithDmsByIdWithUid(ctx context.Context, id, uid uint) error
+	GetSaveDocWithNameAndTitle(ctx context.Context, uid uint, title string) error
 }
 
 type IDocumentUsecase interface {
+	UploadUserDocument(ctx context.Context, doc *Document, part uint, categories []uint, tags []uint, fileData *multipart.FileHeader) (constants.ErrCode, error)
 	GetUserAllDocs(ctx context.Context, uid uint) ([]*Document, error)
 	GetAllDocs(ctx context.Context) ([]*Document, error)
 	GetDmDocs(ctx context.Context, uid uint, did uint) ([]*Document, *Dimension, error)

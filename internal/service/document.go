@@ -7,6 +7,7 @@ import (
 	"resource_det_search/api"
 	v1 "resource_det_search/api/v1"
 	"resource_det_search/internal/biz"
+	"resource_det_search/internal/constants"
 	"resource_det_search/internal/utils"
 )
 
@@ -20,6 +21,70 @@ func NewDocumentService(document biz.IDocumentUsecase, logger *zap.SugaredLogger
 		log: logger,
 		doc: document,
 	}
+}
+
+func (d *DocumentService) UploadUserDocument(c *gin.Context) {
+	uid, _ := c.Get("uid")
+
+	var req v1.UploadUserDocumentReq
+	if err := c.ShouldBind(&req); err != nil {
+		d.log.Errorf("[DocumentService-UploadUserDocument]failed to bind:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormEmptyErr)
+		return
+	}
+
+	categories, cgOk := utils.CheckDocTypeStr(req.Categories)
+	tags, tgOk := utils.CheckDocTypeStr(req.Tags)
+	if len(req.Title) > 50 || len(req.Intro) > 200 || !cgOk || !tgOk {
+		d.log.Errorf("[DocumentService-UploadUserDocument]illegal params")
+		c.JSON(http.StatusOK, api.FormIllegalErr)
+		return
+	}
+
+	docFile, err := c.FormFile("doc")
+	if err != nil {
+		d.log.Errorf("[DocumentService-UploadUserDocument]failed to FormFile:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormFileErr)
+		return
+	}
+
+	fileType, ok := utils.CheckDocFileType(docFile.Filename)
+	if !ok {
+		d.log.Errorf("[DocumentService-UploadUserDocument]doc file type not supported:fileName=[%+v]", docFile.Filename)
+		c.JSON(http.StatusOK, api.FileTypeErr)
+		return
+	}
+
+	ok = utils.CheckDocFileSize(docFile.Size)
+	if !ok {
+		d.log.Errorf("[DocumentService-UploadUserDocument]doc file size not supported:fileSize=[%+v]", docFile.Size)
+		c.JSON(http.StatusOK, api.FileSizeErr)
+		return
+	}
+
+	errCode, err := d.doc.UploadUserDocument(c, &biz.Document{
+		Uid:   uid.(uint),
+		Type:  fileType,
+		Name:  docFile.Filename,
+		Intro: req.Intro,
+		Title: req.Title,
+	}, req.Part, categories, tags, docFile)
+	if err != nil {
+		d.log.Errorf("[DocumentService-UploadUserDocument]failed to UploadUserDocument:err=[%+v]", err)
+		if errCode == constants.DocTitleExist {
+			c.JSON(http.StatusOK, api.DocTitleExist)
+			return
+		}
+		if errCode == constants.DocUploadQnyErr {
+			c.JSON(http.StatusOK, api.DocUploadQnyErr)
+			return
+		}
+		c.JSON(http.StatusOK, api.DefaultErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, api.Success)
+	return
 }
 
 func (d *DocumentService) GetUserAllDocs(c *gin.Context) {

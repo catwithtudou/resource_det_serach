@@ -79,7 +79,7 @@ func TestAddDocLikeNum(t *testing.T) {
 
 func TestDeleteDocById(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	err := d.DeleteDocById(ctx, 1)
+	err := d.DeleteDocWithDmsById(ctx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,36 @@ func TestDeleteDocById(t *testing.T) {
 
 func TestDeleteDocByIdWithUid(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	err := d.DeleteDocByIdWithUid(ctx, 1, 1)
+	err := d.DeleteDocWithDmsByIdWithUid(ctx, 1, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestInsertDocWithDms(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	id, err := d.InsertDocWithDms(ctx, &biz.Document{
+		Uid:          3,
+		Type:         "docx",
+		Dir:          "https://img.zhengyua.cn/resource_det_search/doc/3_fe_way",
+		Name:         "fe_way",
+		Intro:        "",
+		Title:        "the best fe_way",
+		DownloadNum:  0,
+		ScanNum:      0,
+		LikeNum:      0,
+		IsLoadSearch: false,
+		IsSave:       false,
+		Content:      "",
+	}, []uint{8, 9})
+	if err != nil || id <= 0 {
+		t.Fatal(err)
+	}
+}
+
+func TestGetDocWithNameAndTitle(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	err := d.GetSaveDocWithNameAndTitle(ctx, 1, "gfs")
 	if err != nil {
 		t.Fatal(err)
 	}

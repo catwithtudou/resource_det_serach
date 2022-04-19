@@ -12,4 +12,8 @@ const (
 	UserPswdErr    ErrCode = 11003
 	UserEmailExist ErrCode = 11004
 	UserSidExist   ErrCode = 11005
+
+	//Doc
+	DocTitleExist   ErrCode = 12001
+	DocUploadQnyErr ErrCode = 12002
 )

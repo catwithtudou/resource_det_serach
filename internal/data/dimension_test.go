@@ -30,3 +30,21 @@ func TestGetDmsByType(t *testing.T) {
 	//	t.Logf(utils.JsonToString(v))
 	//}
 }
+
+func TestGetUidsInIds(t *testing.T) {
+	d, ctx := newDimensionRepoTest(t)
+	result, err := d.GetUidsInIds(ctx, []uint{7, 8, 9})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf(utils.JsonToString(result))
+}
+
+func TestGetUidTypeInIds(t *testing.T) {
+	d, ctx := newDimensionRepoTest(t)
+	result, err := d.GetUidTypeInIds(ctx, []uint{4, 5, 6})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf(utils.JsonToString(result))
+}

@@ -82,3 +82,11 @@ type AddLikeDocReq struct {
 type DeleteUserDocReq struct {
 	DocId uint `form:"doc_id" binding:"required" json:"doc_id"`
 }
+
+type UploadUserDocumentReq struct {
+	Title      string `form:"title" binding:"required" json:"title"`
+	Intro      string `form:"intro" binding:"required" json:"intro"`
+	Part       uint   `form:"part" binding:"required" json:"part"`
+	Categories string `form:"categories"  json:"categories"`
+	Tags       string `form:"tags"  json:"tags"`
+}
