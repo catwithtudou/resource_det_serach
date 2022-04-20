@@ -271,7 +271,14 @@ func (d *documentUsecase) GetDocWithDms(ctx context.Context, docId uint) (*biz.D
 }
 
 func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *biz.Document, part *biz.Dimension, categories []*biz.Dimension, tags []*biz.Dimension, fileData []byte) {
+	defer func() {
+		if r := recover(); r != nil {
+			d.logger.Errorf("[uploadDetSearch]panic recover:%+v", r)
+		}
+	}()
+
 	// det file
+	// todo:识别失败将content作为空处理
 	res, err := d.detFile(doc.Type, fileData)
 	if err != nil {
 		d.logger.Errorf("[uploadDetSearch]failed to detFile:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))

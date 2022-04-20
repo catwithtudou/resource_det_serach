@@ -13,7 +13,7 @@ type Server struct {
 	HttpEngine *gin.Engine
 }
 
-func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dimensionService *service.DimensionService, documentService *service.DocumentService) *Server {
+func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dimensionService *service.DimensionService, documentService *service.DocumentService, classDocumentService *service.ClassDocumentService) *Server {
 	r := gin.Default()
 
 	r.MaxMultipartMemory = 8 << 20
@@ -43,6 +43,8 @@ func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dime
 	r.DELETE("/resource", documentService.DeleteUserDoc)
 	r.POST("/resource/user/det", documentService.DetUserDoc)
 	r.GET("/resource/info", documentService.GetDocWithDms)
+
+	r.GET("/search/all", classDocumentService.SearchAllQuery)
 
 	return &Server{HttpEngine: r}
 }

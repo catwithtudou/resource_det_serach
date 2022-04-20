@@ -1,8 +1,12 @@
-package biz
+package v1
 
-import "context"
+import "resource_det_search/api"
 
-type ClassDocument struct {
+type SearchAllQueryReq struct {
+	Detail string `form:"detail" binding:"required" json:"detail"`
+}
+
+type ClassDocumentData struct {
 	Id          uint     `json:"id"`
 	Title       string   `json:"title"`
 	Content     string   `json:"content"`
@@ -18,11 +22,7 @@ type ClassDocument struct {
 	LikeNum     int64    `json:"like_num"`
 }
 
-type IClassDocumentRepo interface {
-	InsertDoc(ctx context.Context, docId uint, cd *ClassDocument) error
-	SearchAllQuery(ctx context.Context, queryStr string) ([]*ClassDocument, error)
-}
-
-type IClassDocumentUsecase interface {
-	SearchAllQuery(ctx context.Context, queryStr string) ([]*ClassDocument, error)
+type SearchAllQueryResp struct {
+	api.RespCommon
+	Data []*ClassDocumentData `json:"data,omitempty"`
 }
