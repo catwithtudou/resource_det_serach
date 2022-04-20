@@ -177,3 +177,23 @@ func (d *documentRepo) GetSaveDocWithNameAndTitle(ctx context.Context, uid uint,
 
 	return d.data.db.Model(&biz.Document{}).Where("uid = ? AND is_save = 1 AND title = ?", uid, title).First(&biz.Document{}).Error
 }
+
+func (d *documentRepo) GetDocWithDms(ctx context.Context, id uint) (*biz.Document, []*biz.Dimension, error) {
+	if id <= 0 {
+		return nil, nil, errors.New("id is nil")
+	}
+
+	doc, err := d.GetDocById(ctx, id)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dms := make([]*biz.Dimension, 0)
+	subQuery := d.data.db.Select("did").Where("doc_id = ?", id).Table("doc_with_dm")
+	err = d.data.db.Model(&biz.Dimension{}).Where("id in (?)", subQuery).Find(&dms).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return doc, dms, nil
+}

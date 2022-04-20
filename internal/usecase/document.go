@@ -244,6 +244,32 @@ func (d *documentUsecase) DetFile(ctx context.Context, fileType string, fileData
 
 	return res, nil
 }
+func (d *documentUsecase) GetDocWithDms(ctx context.Context, docId uint) (*biz.Document, map[string][]*biz.Dimension, error) {
+	if docId <= 0 {
+		return nil, nil, errors.New("[GetDocWithDms]docId is nil")
+	}
+
+	doc, dms, err := d.repo.GetDocWithDms(ctx, docId)
+	if err != nil {
+		return nil, nil, fmt.Errorf("[GetDocWithDms]failed to GetDocWithDms:err=[%+v],docId=[%+v]", err, docId)
+	}
+	if doc == nil || len(dms) == 0 {
+		return nil, nil, fmt.Errorf("[GetDocWithDms]doc or dms is nil:docId=[%+v]", docId)
+	}
+
+	dmMap := make(map[string][]*biz.Dimension)
+	for _, v := range dms {
+		if _, ok := dmMap[v.Type]; !ok {
+			dmMap[v.Type] = make([]*biz.Dimension, 0)
+		}
+		dmMap[v.Type] = append(dmMap[v.Type], v)
+	}
+
+	//todo:增加浏览量+下载量
+
+	return doc, dmMap, nil
+}
+
 func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *biz.Document, part *biz.Dimension, categories []*biz.Dimension, tags []*biz.Dimension, fileData []byte) {
 	// det file
 	res, err := d.detFile(doc.Type, fileData)

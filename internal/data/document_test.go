@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"gorm.io/gorm"
 	"resource_det_search/internal/biz"
 	"resource_det_search/internal/utils"
@@ -119,5 +120,18 @@ func TestGetDocWithNameAndTitle(t *testing.T) {
 	err := d.GetSaveDocWithNameAndTitle(ctx, 1, "gfs")
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestGetDocWithDms(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	doc, dms, err := d.GetDocWithDms(ctx, 14)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Println(utils.JsonToString(doc))
+	for _, v := range dms {
+		fmt.Println(utils.JsonToString(v))
 	}
 }

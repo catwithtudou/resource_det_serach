@@ -42,6 +42,7 @@ func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dime
 	r.PUT("/resource/like", documentService.AddLikeDoc)
 	r.DELETE("/resource", documentService.DeleteUserDoc)
 	r.POST("/resource/user/det", documentService.DetUserDoc)
+	r.GET("/resource/info", documentService.GetDocWithDms)
 
 	return &Server{HttpEngine: r}
 }

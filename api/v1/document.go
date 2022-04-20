@@ -95,3 +95,29 @@ type DetUserDocResp struct {
 	api.RespCommon
 	Data string `json:"data"`
 }
+
+type GetDocWithDmsReq struct {
+	DocId uint `form:"doc_id" json:"doc_id" binding:"required"`
+}
+
+type DocWithDmsData struct {
+	DocId       uint                  `json:"doc_id"`
+	Uid         uint                  `json:"uid"`
+	Type        string                `json:"type"`
+	Dir         string                `json:"dir"`
+	Name        string                `json:"name"`
+	Intro       string                `json:"intro"`
+	Title       string                `json:"title"`
+	DownloadNum uint                  `json:"download_num"`
+	ScanNum     uint                  `json:"scan_num"`
+	LikeNum     uint                  `json:"like_num"`
+	Content     string                `json:"content"`
+	Part        DimensionUserDmData   `json:"part"`
+	Categories  []DimensionUserDmData `json:"categories"`
+	Tags        []DimensionUserDmData `json:"tags"`
+}
+
+type GetDocWithDmsResp struct {
+	api.RespCommon
+	Data *DocWithDmsData `json:"data,omitempty"`
+}

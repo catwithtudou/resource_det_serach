@@ -40,6 +40,7 @@ type IDocumentRepo interface {
 	DeleteDocWithDmsById(ctx context.Context, id uint) error
 	DeleteDocWithDmsByIdWithUid(ctx context.Context, id, uid uint) error
 	GetSaveDocWithNameAndTitle(ctx context.Context, uid uint, title string) error
+	GetDocWithDms(ctx context.Context, id uint) (*Document, []*Dimension, error)
 }
 
 type IDocumentUsecase interface {
@@ -51,4 +52,5 @@ type IDocumentUsecase interface {
 	AddLikeDoc(ctx context.Context, docId, num uint) error
 	DeleteUserDoc(ctx context.Context, docId uint, uid uint) error
 	DetFile(ctx context.Context, fileType string, fileData *multipart.FileHeader) (string, error)
+	GetDocWithDms(ctx context.Context, docId uint) (*Document, map[string][]*Dimension, error)
 }
