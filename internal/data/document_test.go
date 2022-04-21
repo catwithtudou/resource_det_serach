@@ -34,7 +34,7 @@ func TestGetDocById(t *testing.T) {
 }
 func TestGetDocsByUid(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	result, err := d.GetDocsByUid(ctx, 3)
+	result, _, err := d.GetDocsByUid(ctx, 3)
 	if err != nil {
 		t.Fatal(err)
 	}

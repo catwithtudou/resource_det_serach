@@ -29,3 +29,8 @@ type DimensionUpdateUserDmReq struct {
 type DimensionDeleteUserDmReq struct {
 	Did uint `form:"did" binding:"required" json:"did"`
 }
+
+type GetDmsPartTypeResp struct {
+	api.RespCommon
+	Data []*DimensionUserDmData `json:"data,omitempty"`
+}

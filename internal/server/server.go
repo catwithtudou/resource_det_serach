@@ -31,6 +31,7 @@ func NewServer(logger *zap.SugaredLogger, userService *service.UserService, dime
 	r.GET("/dimension", dimensionService.GetUserDm)
 	r.PUT("/dimension", dimensionService.UpdateUserDm)
 	r.DELETE("/dimension", dimensionService.DeleteUserDm)
+	r.GET("/dimension/part", dimensionService.GetDmsPartType)
 
 	r.POST("/resource/user/upload", documentService.UploadUserDocument)
 	r.GET("/resource/user/all", documentService.GetUserAllDocs)

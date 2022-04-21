@@ -24,6 +24,7 @@ type IDimensionRepo interface {
 	GetUidsInIds(ctx context.Context, ids []uint) ([]uint, error)
 	GetUidTypeInIds(ctx context.Context, ids []uint) ([]*Dimension, error)
 	GetDmsInIds(ctx context.Context, ids []uint) ([]*Dimension, error)
+	GetDmsPartType(ctx context.Context) ([]*Dimension, error)
 }
 
 type IDimensionUsecase interface {
@@ -31,4 +32,5 @@ type IDimensionUsecase interface {
 	AddUserDm(ctx context.Context, dm *Dimension) error
 	UpdateUserDm(ctx context.Context, did uint, name string, uid uint) error
 	DeleteUserDm(ctx context.Context, did, uid uint) error
+	GetDmsPartType(ctx context.Context) ([]*Dimension, error)
 }

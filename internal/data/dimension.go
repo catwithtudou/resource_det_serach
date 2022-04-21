@@ -134,3 +134,12 @@ func (d *dimensionRepo) GetDmsInIds(ctx context.Context, ids []uint) ([]*biz.Dim
 
 	return result, nil
 }
+func (d *dimensionRepo) GetDmsPartType(ctx context.Context) ([]*biz.Dimension, error) {
+
+	result := make([]*biz.Dimension, 0)
+	if err := d.data.db.Model(&biz.Dimension{}).Where("uid = 0 AND type = 'part'").Find(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}

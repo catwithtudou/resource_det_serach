@@ -121,3 +121,14 @@ func (d *dimensionUsecase) DeleteUserDm(ctx context.Context, did, uid uint) erro
 
 	return nil
 }
+
+func (d *dimensionUsecase) GetDmsPartType(ctx context.Context) ([]*biz.Dimension, error) {
+	result, err := d.repo.GetDmsPartType(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("[GetDmsPartType]failed to GetDmsPartType:err=[%+v]", err)
+	}
+	if len(result) == 0 {
+		return nil, nil
+	}
+	return result, nil
+}

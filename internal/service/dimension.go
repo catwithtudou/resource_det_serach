@@ -138,3 +138,29 @@ func (d *DimensionService) DeleteUserDm(c *gin.Context) {
 	c.JSON(http.StatusOK, api.Success)
 	return
 }
+
+func (d *DimensionService) GetDmsPartType(c *gin.Context) {
+	result, err := d.dm.GetDmsPartType(c)
+	if err != nil {
+		d.log.Errorf("[DimensionService-GetDmsPartType]failed to GetDmsPartType:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.DefaultErr)
+		return
+	}
+
+	resp := &v1.GetDmsPartTypeResp{
+		RespCommon: api.Success,
+	}
+	if result == nil {
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp.Data = make([]*v1.DimensionUserDmData, len(result))
+	for i := 0; i < len(result); i++ {
+		resp.Data[i] = &v1.DimensionUserDmData{
+			Id:   result[i].ID,
+			Name: result[i].Name,
+		}
+	}
+	c.JSON(http.StatusOK, resp)
+	return
+}

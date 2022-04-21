@@ -57,3 +57,12 @@ func TestGetDmsInIds(t *testing.T) {
 	}
 	t.Logf(utils.JsonToString(result))
 }
+
+func TestGetDmsPartType(t *testing.T) {
+	d, ctx := newDimensionRepoTest(t)
+	result, err := d.GetDmsPartType(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf(utils.JsonToString(result))
+}
