@@ -111,7 +111,7 @@ func (u *userUsecase) UploadUserAvatar(ctx context.Context, id uint, fileData *m
 		return "", fmt.Errorf("[UploadUserAvatar]failed to MultipartFileHeaderToBytes:err=[%+v]", err)
 	}
 
-	key, err := utils.UploadByteData(ctx, fileBytes, utils.GenAvatarKey(id))
+	key, err := utils.UploadByteData(ctx, fileBytes, utils.GenAvatarKey(id, fileData.Filename))
 	if err != nil {
 		return "", fmt.Errorf("[UploadUserAvatar]failed to UploadByteData:err=[%+v]", err)
 	}

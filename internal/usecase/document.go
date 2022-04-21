@@ -31,29 +31,42 @@ func NewDocumentUsecase(repo biz.IDocumentRepo, userRepo biz.IUserRepo, dmRepo b
 	}
 }
 
-func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint) ([]*biz.Document, error) {
+func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
 	if uid <= 0 {
-		return nil, errors.New("[GetUserAllDocs]the uid is nil")
+		return nil, nil, errors.New("[GetUserAllDocs]the uid is nil")
 	}
 
-	res, err := d.repo.GetDocsByUid(ctx, uid)
+	res, resDms, err := d.repo.GetDocsByUid(ctx, uid)
 	if err != nil {
-		return nil, fmt.Errorf("[GetUserAllDocs]failed to GetDocsByUid:err=[%+v]", err)
+		return nil, nil, fmt.Errorf("[GetUserAllDocs]failed to GetDocsByUid:err=[%+v]", err)
 	}
-	if len(res) == 0 {
-		return nil, nil
+
+	if len(res) == 0 || len(resDms) == 0 {
+		return nil, nil, nil
 	}
 
 	result := make([]*biz.Document, 0, len(res))
-	for _, v := range result {
+	resDmsMap := make(map[uint]map[string][]*biz.Dimension)
+	for _, v := range res {
 		// if document is_load_search and  is_sava are false,it should be continued
 		if !v.IsLoadSearch || !v.IsSave {
 			continue
 		}
 		result = append(result, v)
+		dms := resDms[v.ID]
+		if len(dms) == 0 {
+			return nil, nil, fmt.Errorf("[GetUserAllDocs]illegal dms:doc_id=[%+v]", v.ID)
+		}
+		resDmsMap[v.ID] = make(map[string][]*biz.Dimension)
+		for _, vv := range dms {
+			if _, ok := resDmsMap[v.ID][vv.Type]; !ok {
+				resDmsMap[v.ID][vv.Type] = make([]*biz.Dimension, 0)
+			}
+			resDmsMap[v.ID][vv.Type] = append(resDmsMap[v.ID][vv.Type], vv)
+		}
 	}
 
-	return result, nil
+	return result, resDmsMap, nil
 }
 func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, error) {
 
@@ -100,7 +113,7 @@ func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]
 	}
 
 	reDocs := make([]*biz.Document, 0, len(docs))
-	for _, v := range reDocs {
+	for _, v := range docs {
 		// if document is_load_search and  is_sava are false,it should be continued
 		if !v.IsLoadSearch || !v.IsSave {
 			continue
@@ -207,7 +220,7 @@ func (d *documentUsecase) UploadUserDocument(ctx context.Context, doc *biz.Docum
 		return constants.DefaultErr, fmt.Errorf("[UploadUserDocument]failed to MultipartFileHeaderToBytes:err=[%+v]", err)
 	}
 
-	key, err := utils.UploadPartByteData(ctx, fileBytes, utils.GenDocKey(docId, doc.Uid))
+	key, err := utils.UploadPartByteData(ctx, fileBytes, utils.GenDocKey(docId, doc.Uid, fileData.Filename))
 	if err != nil {
 		return constants.DocUploadQnyErr, fmt.Errorf("[UploadUserDocument]failed to UploadByteData:err=[%+v]", err)
 	}

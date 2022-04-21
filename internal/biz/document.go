@@ -33,7 +33,7 @@ type IDocumentRepo interface {
 	InsertDocWithDms(ctx context.Context, doc *Document, dmIds []uint) (uint, error)
 	GetDocs(ctx context.Context) ([]*Document, error)
 	GetDocById(ctx context.Context, id uint) (*Document, error)
-	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, error)
+	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, map[uint][]*Dimension, error)
 	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
 	AddDocLikeNum(ctx context.Context, id uint, num uint) error
@@ -45,7 +45,7 @@ type IDocumentRepo interface {
 
 type IDocumentUsecase interface {
 	UploadUserDocument(ctx context.Context, doc *Document, part uint, categories []uint, tags []uint, fileData *multipart.FileHeader) (constants.ErrCode, error)
-	GetUserAllDocs(ctx context.Context, uid uint) ([]*Document, error)
+	GetUserAllDocs(ctx context.Context, uid uint) ([]*Document, map[uint]map[string][]*Dimension, error)
 	GetAllDocs(ctx context.Context) ([]*Document, error)
 	GetDmDocs(ctx context.Context, uid uint, did uint) ([]*Document, *Dimension, error)
 	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*Document, error)

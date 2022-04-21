@@ -99,7 +99,7 @@ func (d *DocumentService) GetUserAllDocs(c *gin.Context) {
 		uid = getUid.(uint)
 	}
 
-	docs, err := d.doc.GetUserAllDocs(c, uid)
+	docs, docsDmsMap, err := d.doc.GetUserAllDocs(c, uid)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetUserAllDocs]failed to GetUserAllDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -113,21 +113,47 @@ func (d *DocumentService) GetUserAllDocs(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	resp.Data = make([]*v1.DocData, 0, len(docs))
+	resp.Data = make([]*v1.DocPartData, 0, len(docs))
 	for _, v := range docs {
-		resp.Data = append(resp.Data, &v1.DocData{
+		data := &v1.DocPartData{
 			DocId:       v.ID,
 			Uid:         v.Uid,
 			Type:        v.Type,
-			Dir:         v.Dir,
 			Name:        v.Name,
 			Intro:       v.Intro,
 			Title:       v.Title,
 			DownloadNum: v.DownloadNum,
 			ScanNum:     v.ScanNum,
 			LikeNum:     v.LikeNum,
-			Content:     v.Content,
-		})
+			UploadTime:  utils.TimeFormat(v.CreatedAt),
+			Part:        v1.DimensionUserDmData{},
+			Categories:  make([]v1.DimensionUserDmData, 0),
+			Tags:        make([]v1.DimensionUserDmData, 0),
+		}
+		for kk, vv := range docsDmsMap[v.ID] {
+			switch kk {
+			case string(constants.Part):
+				data.Part = v1.DimensionUserDmData{
+					Id:   vv[0].ID,
+					Name: vv[0].Name,
+				}
+			case string(constants.Category):
+				for _, vvv := range vv {
+					data.Categories = append(data.Categories, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			case string(constants.Tag):
+				for _, vvv := range vv {
+					data.Tags = append(data.Tags, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			}
+		}
+		resp.Data = append(resp.Data, data)
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -214,20 +240,19 @@ func (d *DocumentService) GetUserDimensionDocs(c *gin.Context) {
 		return
 	}
 
-	resp.Data.Docs = make([]*v1.DocData, 0, len(docs))
+	resp.Data.Docs = make([]*v1.DocNoDmData, 0, len(docs))
 	for _, v := range docs {
-		resp.Data.Docs = append(resp.Data.Docs, &v1.DocData{
+		resp.Data.Docs = append(resp.Data.Docs, &v1.DocNoDmData{
 			DocId:       v.ID,
 			Uid:         v.Uid,
 			Type:        v.Type,
-			Dir:         v.Dir,
 			Name:        v.Name,
 			Intro:       v.Intro,
 			Title:       v.Title,
 			DownloadNum: v.DownloadNum,
 			ScanNum:     v.ScanNum,
 			LikeNum:     v.LikeNum,
-			Content:     v.Content,
+			UploadTime:  utils.TimeFormat(v.CreatedAt),
 		})
 	}
 	c.JSON(http.StatusOK, resp)
@@ -329,20 +354,19 @@ func (d *DocumentService) GetDimensionDocs(c *gin.Context) {
 		return
 	}
 
-	resp.Data.Docs = make([]*v1.DocData, 0, len(docs))
+	resp.Data.Docs = make([]*v1.DocNoDmData, 0, len(docs))
 	for _, v := range docs {
-		resp.Data.Docs = append(resp.Data.Docs, &v1.DocData{
+		resp.Data.Docs = append(resp.Data.Docs, &v1.DocNoDmData{
 			DocId:       v.ID,
 			Uid:         v.Uid,
 			Type:        v.Type,
-			Dir:         v.Dir,
 			Name:        v.Name,
 			Intro:       v.Intro,
 			Title:       v.Title,
 			DownloadNum: v.DownloadNum,
 			ScanNum:     v.ScanNum,
 			LikeNum:     v.LikeNum,
-			Content:     v.Content,
+			UploadTime:  utils.TimeFormat(v.CreatedAt),
 		})
 	}
 	c.JSON(http.StatusOK, resp)

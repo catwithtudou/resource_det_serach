@@ -20,9 +20,38 @@ type DocData struct {
 	Content     string `json:"content"`
 }
 
+type DocNoDmData struct {
+	DocId       uint   `json:"doc_id"`
+	Uid         uint   `json:"uid"`
+	Type        string `json:"type"`
+	Name        string `json:"name"`
+	Intro       string `json:"intro"`
+	Title       string `json:"title"`
+	DownloadNum uint   `json:"download_num"`
+	ScanNum     uint   `json:"scan_num"`
+	LikeNum     uint   `json:"like_num"`
+	UploadTime  string `json:"upload_time"`
+}
+
+type DocPartData struct {
+	DocId       uint                  `json:"doc_id"`
+	Uid         uint                  `json:"uid"`
+	Type        string                `json:"type"`
+	Name        string                `json:"name"`
+	Intro       string                `json:"intro"`
+	Title       string                `json:"title"`
+	DownloadNum uint                  `json:"download_num"`
+	ScanNum     uint                  `json:"scan_num"`
+	LikeNum     uint                  `json:"like_num"`
+	UploadTime  string                `json:"upload_time"`
+	Part        DimensionUserDmData   `json:"part"`
+	Categories  []DimensionUserDmData `json:"categories"`
+	Tags        []DimensionUserDmData `json:"tags"`
+}
+
 type GetUserAllDocsResp struct {
 	api.RespCommon
-	Data []*DocData `json:"data,omitempty"`
+	Data []*DocPartData `json:"data,omitempty"`
 }
 
 type GetAllDocsResp struct {
@@ -36,10 +65,10 @@ type GetUserDimensionDocsReq struct {
 }
 
 type DimensionDocsData struct {
-	Did    uint       `json:"did"`
-	DmName string     `json:"dm_name"`
-	DmType string     `json:"dm_type"`
-	Docs   []*DocData `json:"docs,omitempty"`
+	Did    uint           `json:"did"`
+	DmName string         `json:"dm_name"`
+	DmType string         `json:"dm_type"`
+	Docs   []*DocNoDmData `json:"docs,omitempty"`
 }
 
 type GetUserDimensionDocsResp struct {

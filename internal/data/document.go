@@ -68,17 +68,28 @@ func (d *documentRepo) GetDocById(ctx context.Context, id uint) (*biz.Document, 
 
 	return result, nil
 }
-func (d *documentRepo) GetDocsByUid(ctx context.Context, uid uint) ([]*biz.Document, error) {
+func (d *documentRepo) GetDocsByUid(ctx context.Context, uid uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
 	if uid <= 0 {
-		return nil, errors.New("uid is nil")
+		return nil, nil, errors.New("uid is nil")
 	}
 
 	result := make([]*biz.Document, 0)
-	if err := d.data.db.Model(&biz.Document{}).Where("uid = ?", uid).Find(&result).Error; err != nil {
-		return nil, err
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("uid = ?", uid).Find(&result).Error; err != nil {
+		return nil, nil, err
 	}
 
-	return result, nil
+	resDms := make(map[uint][]*biz.Dimension)
+	for _, v := range result {
+		dms := make([]*biz.Dimension, 0)
+		subQuery := d.data.db.Select("did").Where("doc_id = ?", v.ID).Table("doc_with_dm")
+		err := d.data.db.Model(&biz.Dimension{}).Where("id in (?)", subQuery).Find(&dms).Error
+		if err != nil {
+			return nil, nil, err
+		}
+		resDms[v.ID] = dms
+	}
+
+	return result, resDms, nil
 }
 func (d *documentRepo) GetDocsWithDid(ctx context.Context, did uint) ([]*biz.Document, error) {
 	if did <= 0 {
@@ -87,7 +98,7 @@ func (d *documentRepo) GetDocsWithDid(ctx context.Context, did uint) ([]*biz.Doc
 
 	result := make([]*biz.Document, 0)
 	subQuery := d.data.db.Select("doc_id").Where("did = ?", did).Table("doc_with_dm")
-	if err := d.data.db.Model(&biz.Document{}).Where("id in (?)", subQuery).Find(&result).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Find(&result).Error; err != nil {
 		return nil, err
 	}
 

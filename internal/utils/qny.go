@@ -7,6 +7,7 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -70,12 +71,16 @@ func UploadPartByteData(ctx context.Context, data []byte, key string) (string, e
 	return ret.Key, nil
 }
 
-func GenAvatarKey(uid uint) string {
-	return fmt.Sprintf("resource_det_search/%d_%d_avater", uid, time.Now().Unix())
+func GenAvatarKey(uid uint, fileName string) string {
+	slices := strings.Split(fileName, ".")
+	fileType := slices[len(slices)-1]
+	return fmt.Sprintf("resource_det_search/%d_%d_avater.%s", uid, time.Now().Unix(), fileType)
 }
 
-func GenDocKey(docId uint, uid uint) string {
-	return fmt.Sprintf("resource_det_search/doc/%d_%d_%d", uid, docId, time.Now().Unix())
+func GenDocKey(docId uint, uid uint, fileName string) string {
+	slices := strings.Split(fileName, ".")
+	fileType := slices[len(slices)-1]
+	return fmt.Sprintf("resource_det_search/doc/%d_%d_%d.%s", uid, docId, time.Now().Unix(), fileType)
 }
 
 func GenFileLink(key string) string {
