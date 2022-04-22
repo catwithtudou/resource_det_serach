@@ -53,6 +53,21 @@ func (c *classDocumentRepo) SearchAllQuery(ctx context.Context, queryStr string)
 	return c.searchCDValue(res), nil
 }
 
+func (c *classDocumentRepo) SearchQueryByPart(ctx context.Context, queryStr string, partName string) ([]*biz.ClassDocument, error) {
+	if queryStr == "" || partName == "" {
+		return nil, errors.New("queryStr or partName is nil")
+	}
+
+	query := elastic.NewBoolQuery()
+	query.Must(elastic.NewMatchPhraseQuery("part", partName), elastic.NewQueryStringQuery(queryStr))
+	res, err := c.data.es.Search(c.idx).Query(query).Do(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.searchCDValue(res), nil
+}
+
 func (c *classDocumentRepo) searchCDValue(res *elastic.SearchResult) []*biz.ClassDocument {
 	docs := make([]*biz.ClassDocument, 0)
 	for _, doc := range res.Each(reflect.TypeOf(biz.ClassDocument{})) {
@@ -61,5 +76,4 @@ func (c *classDocumentRepo) searchCDValue(res *elastic.SearchResult) []*biz.Clas
 		}
 	}
 	return docs
-
 }

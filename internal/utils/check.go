@@ -73,7 +73,7 @@ func CheckDocFileType(fileName string) (string, bool) {
 }
 
 func CheckDocFileSize(fileSize int64) bool {
-	return fileSize < 1024*1024*50 && fileSize > 0
+	return fileSize < 1024*1024*20 && fileSize > 0
 }
 
 func DetByteTypesContains(fileType string) bool {
@@ -99,6 +99,15 @@ func DetOcrTypesContains(fileType string) bool {
 }
 
 func Contains(elems []string, elem string) bool {
+	for _, e := range elems {
+		if elem == e {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainsUint(elems []uint, elem uint) bool {
 	for _, e := range elems {
 		if elem == e {
 			return true

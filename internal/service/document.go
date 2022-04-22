@@ -161,7 +161,7 @@ func (d *DocumentService) GetUserAllDocs(c *gin.Context) {
 }
 
 func (d *DocumentService) GetAllDocs(c *gin.Context) {
-	docs, err := d.doc.GetAllDocs(c)
+	docs, docsDmsMap, err := d.doc.GetAllDocs(c)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetAllDocs]failed to GetUserAllDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -175,21 +175,47 @@ func (d *DocumentService) GetAllDocs(c *gin.Context) {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-	resp.Data = make([]*v1.DocData, 0, len(docs))
+	resp.Data = make([]*v1.DocPartData, 0, len(docs))
 	for _, v := range docs {
-		resp.Data = append(resp.Data, &v1.DocData{
+		data := &v1.DocPartData{
 			DocId:       v.ID,
 			Uid:         v.Uid,
 			Type:        v.Type,
-			Dir:         v.Dir,
 			Name:        v.Name,
 			Intro:       v.Intro,
 			Title:       v.Title,
 			DownloadNum: v.DownloadNum,
 			ScanNum:     v.ScanNum,
 			LikeNum:     v.LikeNum,
-			Content:     v.Content,
-		})
+			UploadTime:  utils.TimeFormat(v.CreatedAt),
+			Part:        v1.DimensionUserDmData{},
+			Categories:  make([]v1.DimensionUserDmData, 0),
+			Tags:        make([]v1.DimensionUserDmData, 0),
+		}
+		for kk, vv := range docsDmsMap[v.ID] {
+			switch kk {
+			case string(constants.Part):
+				data.Part = v1.DimensionUserDmData{
+					Id:   vv[0].ID,
+					Name: vv[0].Name,
+				}
+			case string(constants.Category):
+				for _, vvv := range vv {
+					data.Categories = append(data.Categories, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			case string(constants.Tag):
+				for _, vvv := range vv {
+					data.Tags = append(data.Tags, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			}
+		}
+		resp.Data = append(resp.Data, data)
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -334,29 +360,23 @@ func (d *DocumentService) GetDimensionDocs(c *gin.Context) {
 		return
 	}
 
-	docs, dm, err := d.doc.GetDmDocs(c, 0, req.Did)
+	docs, docsDmsMap, err := d.doc.GetPartDocs(c, req.Did)
 	if err != nil {
-		d.log.Errorf("[DocumentService-GetUserDimensionDocs]failed to GetDmDocs:err=[%+v]", err)
+		d.log.Errorf("[DocumentService-GetDimensionDocs]failed to GetDmDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
 		return
 	}
 
 	resp := &v1.GetDimensionDocsResp{
 		RespCommon: api.Success,
-		Data: &v1.DimensionDocsData{
-			Did:    dm.ID,
-			DmName: dm.Name,
-			DmType: dm.Type,
-		},
 	}
 	if len(docs) == 0 {
 		c.JSON(http.StatusOK, resp)
 		return
 	}
-
-	resp.Data.Docs = make([]*v1.DocNoDmData, 0, len(docs))
+	resp.Data = make([]*v1.DocPartData, 0, len(docs))
 	for _, v := range docs {
-		resp.Data.Docs = append(resp.Data.Docs, &v1.DocNoDmData{
+		data := &v1.DocPartData{
 			DocId:       v.ID,
 			Uid:         v.Uid,
 			Type:        v.Type,
@@ -367,8 +387,36 @@ func (d *DocumentService) GetDimensionDocs(c *gin.Context) {
 			ScanNum:     v.ScanNum,
 			LikeNum:     v.LikeNum,
 			UploadTime:  utils.TimeFormat(v.CreatedAt),
-		})
+			Part:        v1.DimensionUserDmData{},
+			Categories:  make([]v1.DimensionUserDmData, 0),
+			Tags:        make([]v1.DimensionUserDmData, 0),
+		}
+		for kk, vv := range docsDmsMap[v.ID] {
+			switch kk {
+			case string(constants.Part):
+				data.Part = v1.DimensionUserDmData{
+					Id:   vv[0].ID,
+					Name: vv[0].Name,
+				}
+			case string(constants.Category):
+				for _, vvv := range vv {
+					data.Categories = append(data.Categories, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			case string(constants.Tag):
+				for _, vvv := range vv {
+					data.Tags = append(data.Tags, v1.DimensionUserDmData{
+						Id:   vvv.ID,
+						Name: vvv.Name,
+					})
+				}
+			}
+		}
+		resp.Data = append(resp.Data, data)
 	}
+
 	c.JSON(http.StatusOK, resp)
 	return
 }

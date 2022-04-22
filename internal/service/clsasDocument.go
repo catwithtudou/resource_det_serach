@@ -7,6 +7,7 @@ import (
 	"resource_det_search/api"
 	v1 "resource_det_search/api/v1"
 	"resource_det_search/internal/biz"
+	"resource_det_search/internal/utils"
 )
 
 type ClassDocumentService struct {
@@ -29,7 +30,7 @@ func (cd *ClassDocumentService) SearchAllQuery(c *gin.Context) {
 		return
 	}
 
-	cds, err := cd.cd.SearchAllQuery(c, req.Detail)
+	cds, err := cd.cd.SearchAllQuery(c, req.Detail, req.PartId)
 	if err != nil {
 		cd.log.Errorf("[ClassDocumentService-SearchAllQuery]failed to SearchAllQuery:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -42,7 +43,7 @@ func (cd *ClassDocumentService) SearchAllQuery(c *gin.Context) {
 	}
 	for i := 0; i < len(cds); i++ {
 		resp.Data[i] = &v1.ClassDocumentData{
-			Id:          cds[i].Id,
+			DocId:       cds[i].Id,
 			Title:       cds[i].Title,
 			Content:     cds[i].Content,
 			Intro:       cds[i].Intro,
@@ -51,7 +52,7 @@ func (cd *ClassDocumentService) SearchAllQuery(c *gin.Context) {
 			Tags:        make([]string, 0),
 			FileType:    cds[i].FileType,
 			Username:    cds[i].Username,
-			UploadDate:  cds[i].UploadDate,
+			UploadTime:  utils.TimestampFormat(cds[i].UploadDate),
 			DownloadNum: cds[i].DownloadNum,
 			ScanNum:     cds[i].ScanNum,
 			LikeNum:     cds[i].LikeNum,

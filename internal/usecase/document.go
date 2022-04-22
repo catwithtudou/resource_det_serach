@@ -68,26 +68,38 @@ func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint) ([]*biz.
 
 	return result, resDmsMap, nil
 }
-func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, error) {
+func (d *documentUsecase) GetAllDocs(ctx context.Context) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
 
-	res, err := d.repo.GetDocs(ctx)
+	res, resDms, err := d.repo.GetDocsWithDms(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("[GetAllDocs]failed to GetDocs:err=[%+v]", err)
+		return nil, nil, fmt.Errorf("[GetAllDocs]failed to GetDocs:err=[%+v]", err)
 	}
-	if len(res) == 0 {
-		return nil, nil
+	if len(res) == 0 || len(resDms) == 0 {
+		return nil, nil, nil
 	}
 
 	result := make([]*biz.Document, 0, len(res))
-	for _, v := range result {
+	resDmsMap := make(map[uint]map[string][]*biz.Dimension)
+	for _, v := range res {
 		// if document is_load_search and  is_sava are false,it should be continued
 		if !v.IsLoadSearch || !v.IsSave {
 			continue
 		}
 		result = append(result, v)
+		dms := resDms[v.ID]
+		if len(dms) == 0 {
+			return nil, nil, fmt.Errorf("[GetAllDocs]illegal dms:doc_id=[%+v]", v.ID)
+		}
+		resDmsMap[v.ID] = make(map[string][]*biz.Dimension)
+		for _, vv := range dms {
+			if _, ok := resDmsMap[v.ID][vv.Type]; !ok {
+				resDmsMap[v.ID][vv.Type] = make([]*biz.Dimension, 0)
+			}
+			resDmsMap[v.ID][vv.Type] = append(resDmsMap[v.ID][vv.Type], vv)
+		}
 	}
 
-	return result, nil
+	return result, resDmsMap, nil
 }
 func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]*biz.Document, *biz.Dimension, error) {
 	if uid < 0 || did <= 0 {
@@ -279,8 +291,58 @@ func (d *documentUsecase) GetDocWithDms(ctx context.Context, docId uint) (*biz.D
 	}
 
 	//todo:增加浏览量+下载量
+	//todo:更新搜索引擎文档数据
 
 	return doc, dmMap, nil
+}
+func (d *documentUsecase) GetPartDocs(ctx context.Context, did uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
+	if did <= 0 {
+		return nil, nil, errors.New("[GetPartDocs] did is nil")
+	}
+
+	// select the dimension info
+	dmInfo, err := d.dmRepo.GetDmByDidUid(ctx, did, 0)
+	if err != nil {
+		return nil, nil, fmt.Errorf("[GetPartDocs]failed to GetDmById:err=[%+v]", err)
+	}
+	if dmInfo == nil {
+		return nil, nil, errors.New("[GetPartDocs]dmInfo is nil")
+	}
+	if dmInfo.Type != string(constants.Part) {
+		return nil, nil, errors.New("[GetPartDocs]did is illegal(not part type)")
+	}
+
+	// select the docs with did
+	res, resDms, err := d.repo.GetDocsByDidWithDms(ctx, did)
+	if err != nil {
+		return nil, nil, fmt.Errorf("[GetPartDocs]failed to GetDocs:err=[%+v]", err)
+	}
+	if len(res) == 0 || len(resDms) == 0 {
+		return nil, nil, nil
+	}
+
+	result := make([]*biz.Document, 0, len(res))
+	resDmsMap := make(map[uint]map[string][]*biz.Dimension)
+	for _, v := range res {
+		// if document is_load_search and  is_sava are false,it should be continued
+		if !v.IsLoadSearch || !v.IsSave {
+			continue
+		}
+		result = append(result, v)
+		dms := resDms[v.ID]
+		if len(dms) == 0 {
+			return nil, nil, fmt.Errorf("[GetPartDocs]illegal dms:doc_id=[%+v]", v.ID)
+		}
+		resDmsMap[v.ID] = make(map[string][]*biz.Dimension)
+		for _, vv := range dms {
+			if _, ok := resDmsMap[v.ID][vv.Type]; !ok {
+				resDmsMap[v.ID][vv.Type] = make([]*biz.Dimension, 0)
+			}
+			resDmsMap[v.ID][vv.Type] = append(resDmsMap[v.ID][vv.Type], vv)
+		}
+	}
+
+	return result, resDmsMap, nil
 }
 
 func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *biz.Document, part *biz.Dimension, categories []*biz.Dimension, tags []*biz.Dimension, fileData []byte) {
@@ -291,46 +353,46 @@ func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *
 	}()
 
 	// det file
-	// todo:识别失败将content作为空处理
 	res, err := d.detFile(doc.Type, fileData)
 	if err != nil {
 		d.logger.Errorf("[uploadDetSearch]failed to detFile:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
-		return
 	}
 
 	// upload search file
-	user, err := d.userRepo.GetUserById(ctx, doc.Uid)
-	if err != nil {
-		d.logger.Errorf("[uploadDetSearch]failed to GetUserById:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
-		return
-	}
-	cd := &biz.ClassDocument{
-		Id:         docId,
-		Title:      doc.Title,
-		Content:    res,
-		Intro:      doc.Intro,
-		Part:       part.Name,
-		FileType:   doc.Type,
-		Username:   user.Name,
-		UploadDate: time.Now().Unix(),
-	}
-	if len(categories) > 0 {
-		cd.Categories = make([]string, 0, len(categories))
-		for _, v := range categories {
-			cd.Categories = append(cd.Categories, v.Name)
+	if utils.ContainsUint(constants.NotUploadSearchUid, doc.Uid) {
+		user, err := d.userRepo.GetUserById(ctx, doc.Uid)
+		if err != nil {
+			d.logger.Errorf("[uploadDetSearch]failed to GetUserById:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
+			return
 		}
-	}
-	if len(tags) > 0 {
-		cd.Tags = make([]string, 0, len(tags))
-		for _, v := range tags {
-			cd.Tags = append(cd.Tags, v.Name)
+		cd := &biz.ClassDocument{
+			Id:         docId,
+			Title:      doc.Title,
+			Content:    res,
+			Intro:      doc.Intro,
+			Part:       part.Name,
+			FileType:   doc.Type,
+			Username:   user.Name,
+			UploadDate: time.Now().Unix(),
 		}
-	}
+		if len(categories) > 0 {
+			cd.Categories = make([]string, 0, len(categories))
+			for _, v := range categories {
+				cd.Categories = append(cd.Categories, v.Name)
+			}
+		}
+		if len(tags) > 0 {
+			cd.Tags = make([]string, 0, len(tags))
+			for _, v := range tags {
+				cd.Tags = append(cd.Tags, v.Name)
+			}
+		}
 
-	err = d.cdRepo.InsertDoc(ctx, docId, cd)
-	if err != nil {
-		d.logger.Errorf("[uploadDetSearch]failed to InsertDoc:err=[%+v],doc=[%+v],cd=[%+v]", err, utils.JsonToString(doc), utils.JsonToString(cd))
-		return
+		err = d.cdRepo.InsertDoc(ctx, docId, cd)
+		if err != nil {
+			d.logger.Errorf("[uploadDetSearch]failed to InsertDoc:err=[%+v],doc=[%+v],cd=[%+v]", err, utils.JsonToString(doc), utils.JsonToString(cd))
+			return
+		}
 	}
 
 	// update docRepo
@@ -340,7 +402,7 @@ func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *
 		Content:      res,
 	})
 	if err != nil {
-		d.logger.Errorf("[uploadDetSearch]failed to UpdateDocById:err=[%+v],doc=[%+v],cd=[%+v]", err, utils.JsonToString(doc), utils.JsonToString(cd))
+		d.logger.Errorf("[uploadDetSearch]failed to UpdateDocById:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
 		return
 	}
 

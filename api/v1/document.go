@@ -56,7 +56,7 @@ type GetUserAllDocsResp struct {
 
 type GetAllDocsResp struct {
 	api.RespCommon
-	Data []*DocData `json:"data,omitempty"`
+	Data []*DocPartData `json:"data,omitempty"`
 }
 
 type GetUserDimensionDocsReq struct {
@@ -92,7 +92,7 @@ type GetDimensionDocsReq struct {
 
 type GetDimensionDocsResp struct {
 	api.RespCommon
-	Data *DimensionDocsData `json:"data,omitempty"`
+	Data []*DocPartData `json:"data,omitempty"`
 }
 
 type GetAllDimensionDocsReq struct {

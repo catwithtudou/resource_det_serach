@@ -36,3 +36,7 @@ const (
 )
 
 var DetOcrTypes = []DetOcrType{Jpg, Jpeg, Png, Pdf}
+
+var (
+	NotUploadSearchUid = []uint{12}
+)

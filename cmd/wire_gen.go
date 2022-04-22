@@ -32,7 +32,7 @@ func initApp(confData *conf.Data, sugaredLogger *zap.SugaredLogger) (*server.Ser
 	iClassDocumentRepo := data.NewClassDocumentRepo(dataData)
 	iDocumentUsecase := usecase.NewDocumentUsecase(iDocumentRepo, iUserRepo, iDimensionRepo, iClassDocumentRepo, sugaredLogger)
 	documentService := service.NewDocumentService(iDocumentUsecase, sugaredLogger)
-	iClassDocumentUsecase := usecase.NewClassDocumentUsecase(iClassDocumentRepo)
+	iClassDocumentUsecase := usecase.NewClassDocumentUsecase(iClassDocumentRepo, iDimensionRepo)
 	classDocumentService := service.NewClassDocumentService(iClassDocumentUsecase, sugaredLogger)
 	serverServer := server.NewServer(sugaredLogger, userService, dimensionService, documentService, classDocumentService)
 	return serverServer, func() {

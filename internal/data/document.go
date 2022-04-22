@@ -49,13 +49,24 @@ func (d *documentRepo) InsertDocWithDms(ctx context.Context, doc *biz.Document, 
 	tx.Commit()
 	return doc.ID, nil
 }
-func (d *documentRepo) GetDocs(ctx context.Context) ([]*biz.Document, error) {
+func (d *documentRepo) GetDocsWithDms(ctx context.Context) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
 	docs := make([]*biz.Document, 0)
-	if err := d.data.db.Model(&biz.Document{}).Find(&docs).Error; err != nil {
-		return nil, err
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Find(&docs).Error; err != nil {
+		return nil, nil, err
 	}
 
-	return docs, nil
+	resDms := make(map[uint][]*biz.Dimension)
+	for _, v := range docs {
+		dms := make([]*biz.Dimension, 0)
+		subQuery := d.data.db.Select("did").Where("doc_id = ?", v.ID).Table("doc_with_dm")
+		err := d.data.db.Model(&biz.Dimension{}).Where("id in (?)", subQuery).Find(&dms).Error
+		if err != nil {
+			return nil, nil, err
+		}
+		resDms[v.ID] = dms
+	}
+
+	return docs, resDms, nil
 }
 func (d *documentRepo) GetDocById(ctx context.Context, id uint) (*biz.Document, error) {
 	if id <= 0 {
@@ -207,4 +218,30 @@ func (d *documentRepo) GetDocWithDms(ctx context.Context, id uint) (*biz.Documen
 	}
 
 	return doc, dms, nil
+}
+
+func (d *documentRepo) GetDocsByDidWithDms(ctx context.Context, did uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
+	if did <= 0 {
+		return nil, nil, errors.New("did is nil")
+	}
+
+	docs := make([]*biz.Document, 0)
+	subQuery := d.data.db.Select("doc_id").Where("did = ?", did).Table("doc_with_dm")
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Find(&docs).Error; err != nil {
+		return nil, nil, err
+	}
+
+	resDms := make(map[uint][]*biz.Dimension)
+	for _, v := range docs {
+		dms := make([]*biz.Dimension, 0)
+		subQuery := d.data.db.Select("did").Where("doc_id = ?", v.ID).Table("doc_with_dm")
+		err := d.data.db.Model(&biz.Dimension{}).Where("id in (?)", subQuery).Find(&dms).Error
+		if err != nil {
+			return nil, nil, err
+		}
+		resDms[v.ID] = dms
+	}
+
+	return docs, resDms, nil
+
 }
