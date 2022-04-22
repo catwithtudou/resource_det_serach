@@ -6,6 +6,7 @@ import (
 	"github.com/olivere/elastic/v7"
 	"reflect"
 	"resource_det_search/internal/biz"
+	"resource_det_search/internal/constants"
 	"strconv"
 )
 
@@ -17,7 +18,7 @@ type classDocumentRepo struct {
 func NewClassDocumentRepo(data *Data) biz.IClassDocumentRepo {
 	return &classDocumentRepo{
 		data: data,
-		idx:  "class_document",
+		idx:  constants.ClassDocument,
 	}
 }
 
@@ -66,6 +67,21 @@ func (c *classDocumentRepo) SearchQueryByPart(ctx context.Context, queryStr stri
 	}
 
 	return c.searchCDValue(res), nil
+}
+
+func (c *classDocumentRepo) UpdateNums(ctx context.Context, docId uint, likeNum uint, scanNum uint, downloadNum uint) error {
+	if docId <= 0 {
+		return errors.New("docId is nil")
+	}
+
+	_, err := c.data.es.Update().Index(c.idx).Id(strconv.Itoa(int(docId))).Doc(map[string]interface{}{
+		"like_num": likeNum, "scan_num": scanNum, "download_num": downloadNum,
+	}).Refresh("true").Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *classDocumentRepo) searchCDValue(res *elastic.SearchResult) []*biz.ClassDocument {

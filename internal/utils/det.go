@@ -1,13 +1,17 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/base64"
 	"fmt"
+	"github.com/gen2brain/go-fitz"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/unidoc/unioffice/common/license"
 	"github.com/unidoc/unioffice/document"
 	"github.com/unidoc/unioffice/presentation"
 	"github.com/unidoc/unioffice/spreadsheet"
+	"image/jpeg"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -20,8 +24,6 @@ func NewUnidoc(key string) {
 		panic(err)
 	}
 }
-
-// TODO:完善识别部分
 
 func DetDocxByUnidoc(fileBytes []byte) (string, error) {
 	tFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("resource_det_search_docx_%d-*.docx", time.Now().UnixNano()))
@@ -96,6 +98,59 @@ func DetMd(fileBytes []byte) (string, error) {
 	unsafe := blackfriday.MarkdownCommon(fileBytes)
 	html := bluemonday.UGCPolicy().SanitizeBytes(unsafe)
 	return DelMdTags(string(html)), nil
+}
+
+func DetPdf(fileBytes []byte) (string, error) {
+	tFile, err := ioutil.TempFile(os.TempDir(), fmt.Sprintf("resource_det_search_pdf_%d-*.xlsx", time.Now().UnixNano()))
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(tFile.Name())
+
+	_, err = tFile.Write(fileBytes)
+	if err != nil {
+		return "", err
+	}
+
+	pdf, err := fitz.New(tFile.Name())
+	if err != nil {
+		return "", err
+	}
+
+	result := ""
+
+	// TODO:目前PDF识别暂时只识别前三张
+	for n := 0; n < 3; n++ {
+		img, err := pdf.Image(n)
+		if err != nil {
+			panic(err)
+		}
+
+		buf := new(bytes.Buffer)
+		err = jpeg.Encode(buf, img, nil)
+		if err != nil {
+			panic(err)
+		}
+
+		imageBase64Val := base64.StdEncoding.EncodeToString(buf.Bytes())
+		val, err := PostReqOcr(imageBase64Val)
+		if err != nil {
+			return "", err
+		}
+
+		result += val
+	}
+
+	return result, nil
+}
+
+func DetImg(fileBytes []byte) (string, error) {
+	imageBase64Val := base64.StdEncoding.EncodeToString(fileBytes)
+	val, err := PostReqOcr(imageBase64Val)
+	if err != nil {
+		return "", err
+	}
+	return val, nil
 }
 
 func DelPunctuation(p string) string {

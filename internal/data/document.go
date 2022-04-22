@@ -132,19 +132,6 @@ func (d *documentRepo) UpdateDocById(ctx context.Context, doc *biz.Document) err
 		Content:      doc.Content,
 	}).Error
 }
-func (d *documentRepo) AddDocLikeNum(ctx context.Context, id uint, num uint) error {
-	if id <= 0 || num <= 0 {
-		return errors.New("id or num is nil")
-	}
-
-	if err := d.data.db.Model(&biz.Document{}).Where("id = ?", id).First(&biz.Document{}).Error; err != nil {
-		return err
-	}
-
-	return d.data.db.Model(&biz.Document{
-		Model: gorm.Model{ID: id},
-	}).UpdateColumn("like_num", gorm.Expr("like_num + ?", num)).Error
-}
 func (d *documentRepo) DeleteDocWithDmsById(ctx context.Context, id uint) error {
 	if id <= 0 {
 		return errors.New("id is nil")
@@ -244,4 +231,18 @@ func (d *documentRepo) GetDocsByDidWithDms(ctx context.Context, did uint) ([]*bi
 
 	return docs, resDms, nil
 
+}
+
+func (d *documentRepo) AddDocNum(ctx context.Context, id uint, num uint, typeStr string) error {
+	if id <= 0 || num <= 0 || typeStr == "" {
+		return errors.New("id or num is nil")
+	}
+
+	if err := d.data.db.Model(&biz.Document{}).Where("id = ?", id).First(&biz.Document{}).Error; err != nil {
+		return err
+	}
+
+	return d.data.db.Model(&biz.Document{
+		Model: gorm.Model{ID: id},
+	}).UpdateColumn(typeStr, gorm.Expr(typeStr+" + ?", num)).Error
 }

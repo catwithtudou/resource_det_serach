@@ -36,12 +36,12 @@ type IDocumentRepo interface {
 	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, map[uint][]*Dimension, error)
 	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
-	AddDocLikeNum(ctx context.Context, id uint, num uint) error
 	DeleteDocWithDmsById(ctx context.Context, id uint) error
 	DeleteDocWithDmsByIdWithUid(ctx context.Context, id, uid uint) error
 	GetSaveDocWithNameAndTitle(ctx context.Context, uid uint, title string) error
 	GetDocWithDms(ctx context.Context, id uint) (*Document, []*Dimension, error)
 	GetDocsByDidWithDms(ctx context.Context, did uint) ([]*Document, map[uint][]*Dimension, error)
+	AddDocNum(ctx context.Context, id uint, num uint, typeStr string) error
 }
 
 type IDocumentUsecase interface {

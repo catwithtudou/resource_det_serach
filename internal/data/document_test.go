@@ -14,16 +14,6 @@ func newDocumentRepoTest(t *testing.T) (*documentRepo, context.Context) {
 	return &documentRepo{data: data}, context.Background()
 }
 
-func TestGetDocs(t *testing.T) {
-	d, ctx := newDocumentRepoTest(t)
-	result, err := d.GetDocs(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, v := range result {
-		t.Logf(utils.JsonToString(v))
-	}
-}
 func TestGetDocById(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
 	result, err := d.GetDocById(ctx, 1)
@@ -68,14 +58,6 @@ func TestUpdateDocById(t *testing.T) {
 		t.Fatal(err)
 	}
 
-}
-
-func TestAddDocLikeNum(t *testing.T) {
-	d, ctx := newDocumentRepoTest(t)
-	err := d.AddDocLikeNum(ctx, 1, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
 }
 
 func TestDeleteDocById(t *testing.T) {
@@ -133,5 +115,13 @@ func TestGetDocWithDms(t *testing.T) {
 	fmt.Println(utils.JsonToString(doc))
 	for _, v := range dms {
 		fmt.Println(utils.JsonToString(v))
+	}
+}
+
+func TestAddDocNum(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	err := d.AddDocNum(ctx, 18, 1, "like_num")
+	if err != nil {
+		t.Fatal(err)
 	}
 }

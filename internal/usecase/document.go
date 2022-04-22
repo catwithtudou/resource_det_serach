@@ -173,7 +173,7 @@ func (d *documentUsecase) AddLikeDoc(ctx context.Context, docId uint, num uint) 
 		return errors.New("[AddLikeDoc]docId or num is nil")
 	}
 
-	if err := d.repo.AddDocLikeNum(ctx, docId, num); err != nil {
+	if err := d.repo.AddDocNum(ctx, docId, num, constants.LikeNum); err != nil {
 		return fmt.Errorf("[AddLikeDoc]failed to AddDocLikeNum:err=[%+v]", err)
 	}
 
@@ -290,8 +290,7 @@ func (d *documentUsecase) GetDocWithDms(ctx context.Context, docId uint) (*biz.D
 		dmMap[v.Type] = append(dmMap[v.Type], v)
 	}
 
-	//todo:增加浏览量+下载量
-	//todo:更新搜索引擎文档数据
+	go d.updateScanDownloadNumWithSearch(ctx, docId)
 
 	return doc, dmMap, nil
 }
@@ -359,7 +358,7 @@ func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *
 	}
 
 	// upload search file
-	if utils.ContainsUint(constants.NotUploadSearchUid, doc.Uid) {
+	if !utils.ContainsUint(constants.NotUploadSearchUid, doc.Uid) {
 		user, err := d.userRepo.GetUserById(ctx, doc.Uid)
 		if err != nil {
 			d.logger.Errorf("[uploadDetSearch]failed to GetUserById:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
@@ -448,23 +447,11 @@ func (d *documentUsecase) detFile(fileType string, fileBytes []byte) (string, er
 		case constants.Txt:
 			return string(fileBytes), nil
 		case constants.Docx:
-			txt, err := utils.DetDocxByUnidoc(fileBytes)
-			if err != nil {
-				return "", err
-			}
-			return txt, nil
+			return utils.DetDocxByUnidoc(fileBytes)
 		case constants.Pptx:
-			txt, err := utils.DetPptxByUnidoc(fileBytes)
-			if err != nil {
-				return "", err
-			}
-			return txt, nil
+			return utils.DetPptxByUnidoc(fileBytes)
 		case constants.Xlsx:
-			txt, err := utils.DetXlsxByUnidoc(fileBytes)
-			if err != nil {
-				return "", err
-			}
-			return txt, nil
+			return utils.DetXlsxByUnidoc(fileBytes)
 		case constants.Md:
 			return utils.DetMd(fileBytes)
 		default:
@@ -477,6 +464,14 @@ func (d *documentUsecase) detFile(fileType string, fileBytes []byte) (string, er
 	if utils.DetOcrTypesContains(fileType) {
 		detType := constants.DetOcrType(fileType)
 		switch detType {
+		case constants.Pdf:
+			return utils.DetPdf(fileBytes)
+		case constants.Jpeg:
+			return utils.DetImg(fileBytes)
+		case constants.Png:
+			return utils.DetImg(fileBytes)
+		case constants.Jpg:
+			return utils.DetImg(fileBytes)
 		default:
 			return "", errors.New("det ocr type not supported")
 		}
@@ -484,4 +479,34 @@ func (d *documentUsecase) detFile(fileType string, fileBytes []byte) (string, er
 	}
 
 	return "", errors.New("det doc type not supported")
+}
+
+func (d *documentUsecase) updateScanDownloadNumWithSearch(ctx context.Context, docId uint) {
+	defer func() {
+		if r := recover(); r != nil {
+			d.logger.Errorf("[updateScanDownloadNumWithSearch]panic recover:%+v", r)
+		}
+	}()
+
+	err := d.repo.AddDocNum(ctx, docId, 1, constants.ScanNum)
+	if err != nil {
+		d.logger.Errorf("[updateScanDownloadNum]failed to AddDocScanNum:err=[%+v],docId=[%+v]", err, docId)
+	}
+
+	err = d.repo.AddDocNum(ctx, docId, 1, constants.DownloadNum)
+	if err != nil {
+		d.logger.Errorf("[updateScanDownloadNum]failed to AddDocDownloadNum:err=[%+v],docId=[%+v]", err, docId)
+	}
+
+	doc, err := d.repo.GetDocById(ctx, docId)
+	if err != nil {
+		d.logger.Errorf("[updateScanDownloadNum]failed to GetDocById:err=[%+v],docId=[%+v]", err, docId)
+		return
+	}
+
+	err = d.cdRepo.UpdateNums(ctx, docId, doc.LikeNum, doc.ScanNum, doc.DownloadNum)
+	if err != nil {
+		d.logger.Errorf("[updateScanDownloadNum]failed to UpdateNums:err=[%+v],doc=[%+v]", err, utils.JsonToString(doc))
+		return
+	}
 }

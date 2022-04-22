@@ -40,3 +40,13 @@ var DetOcrTypes = []DetOcrType{Jpg, Jpeg, Png, Pdf}
 var (
 	NotUploadSearchUid = []uint{12}
 )
+
+const (
+	LikeNum     = "like_num"
+	ScanNum     = "scan_num"
+	DownloadNum = "download_num"
+)
+
+const (
+	ClassDocument = "class_document"
+)

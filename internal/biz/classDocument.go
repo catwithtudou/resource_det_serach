@@ -22,6 +22,7 @@ type IClassDocumentRepo interface {
 	InsertDoc(ctx context.Context, docId uint, cd *ClassDocument) error
 	SearchAllQuery(ctx context.Context, queryStr string) ([]*ClassDocument, error)
 	SearchQueryByPart(ctx context.Context, queryStr string, partName string) ([]*ClassDocument, error)
+	UpdateNums(ctx context.Context, docId uint, likeNum uint, scanNum uint, downloadNum uint) error
 }
 type IClassDocumentUsecase interface {
 	SearchAllQuery(ctx context.Context, queryStr string, partId uint) ([]*ClassDocument, error)

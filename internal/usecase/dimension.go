@@ -21,6 +21,7 @@ func NewDimensionUsecase(repo biz.IDimensionRepo, userRepo biz.IUserRepo) biz.ID
 }
 
 // TODO:维度更新方面涉及到搜索索引更新
+// TODO:排序规则后续考虑
 
 func (d *dimensionUsecase) GetUserDm(ctx context.Context, uid uint) (map[string][]*biz.Dimension, error) {
 	if uid <= 0 {
