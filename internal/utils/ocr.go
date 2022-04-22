@@ -6,10 +6,14 @@ import (
 	"strings"
 )
 
-var client *resty.Client
+var (
+	client  *resty.Client
+	ocrLink string
+)
 
-func init() {
+func NewOcrClient(link string) {
 	client = resty.New()
+	ocrLink = link
 }
 
 func PostReqOcr(imgBase64 string) (string, error) {
@@ -19,7 +23,7 @@ func PostReqOcr(imgBase64 string) (string, error) {
 			"key":   []string{"image"},
 			"value": []string{imgBase64},
 		}).
-		Post("http://127.0.0.1:9299/ocr/prediction")
+		Post(ocrLink)
 	if err != nil {
 		return "", err
 	}

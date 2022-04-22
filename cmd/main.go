@@ -63,6 +63,7 @@ func main() {
 
 	utils.NewQny(cf.Data.Qiniuyun.Bucket, cf.Data.Qiniuyun.Access, cf.Data.Qiniuyun.Secret, cf.Data.Qiniuyun.Domain)
 	utils.NewUnidoc(cf.Unidoc.License)
+	utils.NewOcrClient(cf.Ocr.Source)
 
 	app, _, err := initApp(cf.Data, logger)
 	if err != nil {
