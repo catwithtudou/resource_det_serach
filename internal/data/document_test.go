@@ -125,3 +125,22 @@ func TestAddDocNum(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestGetDocsWithDms(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	res, _, err := d.GetDocsWithDms(ctx, 0, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		t.Logf(utils.JsonToString(v))
+	}
+	t.Logf("========================")
+	res, _, err = d.GetDocsWithDms(ctx, 5, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range res {
+		t.Logf(utils.JsonToString(v))
+	}
+}

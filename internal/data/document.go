@@ -49,9 +49,13 @@ func (d *documentRepo) InsertDocWithDms(ctx context.Context, doc *biz.Document, 
 	tx.Commit()
 	return doc.ID, nil
 }
-func (d *documentRepo) GetDocsWithDms(ctx context.Context) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
+func (d *documentRepo) GetDocsWithDms(ctx context.Context, offset uint, size uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
+	if offset < 0 || size <= 0 {
+		return nil, nil, errors.New("offset or size is nil")
+	}
+
 	docs := make([]*biz.Document, 0)
-	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Find(&docs).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Order("id").Limit(1).Limit(int(size)).Offset(int(offset)).Find(&docs).Error; err != nil {
 		return nil, nil, err
 	}
 
@@ -207,14 +211,14 @@ func (d *documentRepo) GetDocWithDms(ctx context.Context, id uint) (*biz.Documen
 	return doc, dms, nil
 }
 
-func (d *documentRepo) GetDocsByDidWithDms(ctx context.Context, did uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
-	if did <= 0 {
-		return nil, nil, errors.New("did is nil")
+func (d *documentRepo) GetDocsByDidWithDms(ctx context.Context, did uint, offset uint, size uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
+	if did <= 0 || offset < 0 || size <= 0 {
+		return nil, nil, errors.New("did or offset or size is nil")
 	}
 
 	docs := make([]*biz.Document, 0)
 	subQuery := d.data.db.Select("doc_id").Where("did = ?", did).Table("doc_with_dm")
-	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Find(&docs).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Order("id").Limit(1).Limit(int(size)).Offset(int(offset)).Find(&docs).Error; err != nil {
 		return nil, nil, err
 	}
 

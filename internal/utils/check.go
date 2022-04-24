@@ -115,3 +115,10 @@ func ContainsUint(elems []uint, elem uint) bool {
 	}
 	return false
 }
+
+func CheckOffsetSize(offset uint, size uint) bool {
+	if size > 20 {
+		return false
+	}
+	return true
+}

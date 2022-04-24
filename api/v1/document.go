@@ -54,6 +54,11 @@ type GetUserAllDocsResp struct {
 	Data []*DocPartData `json:"data,omitempty"`
 }
 
+type GetAllDocsReq struct {
+	Offset uint `form:"offset" json:"offset"`
+	Size   uint `form:"size" binding:"required" json:"size"`
+}
+
 type GetAllDocsResp struct {
 	api.RespCommon
 	Data []*DocPartData `json:"data,omitempty"`
@@ -87,7 +92,9 @@ type GetUserAllDimensionDocsResp struct {
 }
 
 type GetDimensionDocsReq struct {
-	Did uint `form:"did" binding:"required" json:"did"`
+	Did    uint `form:"did" binding:"required" json:"did"`
+	Offset uint `form:"offset" json:"offset"`
+	Size   uint `form:"size" binding:"required" json:"size"`
 }
 
 type GetDimensionDocsResp struct {

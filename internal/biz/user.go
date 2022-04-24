@@ -21,6 +21,8 @@ type User struct {
 	IsActive bool   `gorm:"not null;default:false"`
 }
 
+// TODO:邮箱验证激活机制&限制
+
 type IUserRepo interface {
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserBySid(ctx context.Context, sid string) (*User, error)
