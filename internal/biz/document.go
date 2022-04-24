@@ -33,8 +33,8 @@ type IDocumentRepo interface {
 	InsertDocWithDms(ctx context.Context, doc *Document, dmIds []uint) (uint, error)
 	GetDocsWithDms(ctx context.Context, offset uint, size uint) ([]*Document, map[uint][]*Dimension, error)
 	GetDocById(ctx context.Context, id uint) (*Document, error)
-	GetDocsByUid(ctx context.Context, uid uint) ([]*Document, map[uint][]*Dimension, error)
-	GetDocsWithDid(ctx context.Context, did uint) ([]*Document, error)
+	GetDocsByUid(ctx context.Context, uid uint, offset uint, size uint) ([]*Document, map[uint][]*Dimension, error)
+	GetDocsWithDid(ctx context.Context, did uint, offset uint, size uint) ([]*Document, error)
 	UpdateDocById(ctx context.Context, doc *Document) error
 	DeleteDocWithDmsById(ctx context.Context, id uint) error
 	DeleteDocWithDmsByIdWithUid(ctx context.Context, id, uid uint) error
@@ -46,10 +46,10 @@ type IDocumentRepo interface {
 
 type IDocumentUsecase interface {
 	UploadUserDocument(ctx context.Context, doc *Document, part uint, categories []uint, tags []uint, fileData *multipart.FileHeader) (constants.ErrCode, error)
-	GetUserAllDocs(ctx context.Context, uid uint) ([]*Document, map[uint]map[string][]*Dimension, error)
+	GetUserAllDocs(ctx context.Context, uid uint, offset uint, size uint) ([]*Document, map[uint]map[string][]*Dimension, error)
 	GetAllDocs(ctx context.Context, offset uint, size uint) ([]*Document, map[uint]map[string][]*Dimension, error)
-	GetDmDocs(ctx context.Context, uid uint, did uint) ([]*Document, *Dimension, error)
-	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*Document, error)
+	GetDmDocs(ctx context.Context, uid uint, did uint, offset uint, size uint) ([]*Document, *Dimension, error)
+	GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string, offset uint, size uint) (map[string][]*Document, error)
 	AddLikeDoc(ctx context.Context, docId, num uint) error
 	DeleteUserDoc(ctx context.Context, docId uint, uid uint) error
 	DetFile(ctx context.Context, fileType string, fileData *multipart.FileHeader) (string, error)

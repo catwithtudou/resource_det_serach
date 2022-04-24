@@ -55,7 +55,7 @@ func (d *documentRepo) GetDocsWithDms(ctx context.Context, offset uint, size uin
 	}
 
 	docs := make([]*biz.Document, 0)
-	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Order("id").Limit(1).Limit(int(size)).Offset(int(offset)).Find(&docs).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Order("id").Limit(int(size)).Offset(int(offset)).Find(&docs).Error; err != nil {
 		return nil, nil, err
 	}
 
@@ -83,13 +83,13 @@ func (d *documentRepo) GetDocById(ctx context.Context, id uint) (*biz.Document, 
 
 	return result, nil
 }
-func (d *documentRepo) GetDocsByUid(ctx context.Context, uid uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
-	if uid <= 0 {
+func (d *documentRepo) GetDocsByUid(ctx context.Context, uid uint, offset uint, size uint) ([]*biz.Document, map[uint][]*biz.Dimension, error) {
+	if uid <= 0 || offset < 0 || size <= 0 {
 		return nil, nil, errors.New("uid is nil")
 	}
 
 	result := make([]*biz.Document, 0)
-	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("uid = ?", uid).Find(&result).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("uid = ?", uid).Order("id").Limit(int(size)).Offset(int(offset)).Find(&result).Error; err != nil {
 		return nil, nil, err
 	}
 
@@ -106,14 +106,14 @@ func (d *documentRepo) GetDocsByUid(ctx context.Context, uid uint) ([]*biz.Docum
 
 	return result, resDms, nil
 }
-func (d *documentRepo) GetDocsWithDid(ctx context.Context, did uint) ([]*biz.Document, error) {
-	if did <= 0 {
-		return nil, errors.New("did is nil")
+func (d *documentRepo) GetDocsWithDid(ctx context.Context, did uint, offset uint, size uint) ([]*biz.Document, error) {
+	if did <= 0 || offset < 0 || size <= 0 {
+		return nil, errors.New("did or offset or size is nil")
 	}
 
 	result := make([]*biz.Document, 0)
 	subQuery := d.data.db.Select("doc_id").Where("did = ?", did).Table("doc_with_dm")
-	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Find(&result).Error; err != nil {
+	if err := d.data.db.Model(&biz.Document{}).Select("id,created_at,updated_at,uid,type,name,intro,title,download_num,scan_num,like_num,is_load_search,is_save").Where("id in (?)", subQuery).Order("id").Limit(int(size)).Offset(int(offset)).Find(&result).Error; err != nil {
 		return nil, err
 	}
 

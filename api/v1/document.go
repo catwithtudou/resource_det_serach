@@ -3,7 +3,9 @@ package v1
 import "resource_det_search/api"
 
 type GetUserAllDocsReq struct {
-	Uid uint `form:"uid" json:"uid"`
+	Uid    uint `form:"uid" json:"uid"`
+	Offset uint `form:"offset" json:"offset"`
+	Size   uint `form:"size" binding:"required" json:"size"`
 }
 
 type DocData struct {
@@ -65,8 +67,10 @@ type GetAllDocsResp struct {
 }
 
 type GetUserDimensionDocsReq struct {
-	Uid uint `form:"uid" json:"uid"`
-	Did uint `form:"did" binding:"required" json:"did"`
+	Uid    uint `form:"uid" json:"uid"`
+	Did    uint `form:"did" binding:"required" json:"did"`
+	Offset uint `form:"offset" json:"offset"`
+	Size   uint `form:"size" binding:"required" json:"size"`
 }
 
 type DimensionDocsData struct {
@@ -82,8 +86,10 @@ type GetUserDimensionDocsResp struct {
 }
 
 type GetUserAllDimensionDocsReq struct {
-	Uid  uint   `form:"uid" json:"uid"`
-	Type string `form:"type" binding:"required" json:"type"`
+	Uid    uint   `form:"uid" json:"uid"`
+	Type   string `form:"type" binding:"required" json:"type"`
+	Offset uint   `form:"offset" json:"offset"`
+	Size   uint   `form:"size" binding:"required" json:"size"`
 }
 
 type GetUserAllDimensionDocsResp struct {
@@ -103,7 +109,9 @@ type GetDimensionDocsResp struct {
 }
 
 type GetAllDimensionDocsReq struct {
-	Type string `form:"type" binding:"required" json:"type"`
+	Type   string `form:"type" binding:"required" json:"type"`
+	Offset uint   `form:"offset" json:"offset"`
+	Size   uint   `form:"size" binding:"required" json:"size"`
 }
 
 type GetAllDimensionDocsResp struct {

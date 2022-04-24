@@ -31,12 +31,12 @@ func NewDocumentUsecase(repo biz.IDocumentRepo, userRepo biz.IUserRepo, dmRepo b
 	}
 }
 
-func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
+func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint, offset uint, size uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
 	if uid <= 0 {
 		return nil, nil, errors.New("[GetUserAllDocs]the uid is nil")
 	}
 
-	res, resDms, err := d.repo.GetDocsByUid(ctx, uid)
+	res, resDms, err := d.repo.GetDocsByUid(ctx, uid, offset, size)
 	if err != nil {
 		return nil, nil, fmt.Errorf("[GetUserAllDocs]failed to GetDocsByUid:err=[%+v]", err)
 	}
@@ -104,9 +104,9 @@ func (d *documentUsecase) GetAllDocs(ctx context.Context, offset uint, size uint
 
 	return result, resDmsMap, nil
 }
-func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]*biz.Document, *biz.Dimension, error) {
-	if uid < 0 || did <= 0 {
-		return nil, nil, errors.New("[GetDmDocs]uid or did is nil")
+func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint, offset uint, size uint) ([]*biz.Document, *biz.Dimension, error) {
+	if uid < 0 || did <= 0 || offset < 0 || size <= 0 {
+		return nil, nil, errors.New("[GetDmDocs]uid or did or offset or size is nil")
 	}
 
 	// select the dimension info
@@ -119,7 +119,7 @@ func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]
 	}
 
 	// select the docs with did
-	docs, err := d.repo.GetDocsWithDid(ctx, did)
+	docs, err := d.repo.GetDocsWithDid(ctx, did, offset, size)
 	if err != nil {
 		return nil, nil, fmt.Errorf("[GetDmDocs]failed to GetDocsWithDid:err=[%+v]", err)
 	}
@@ -138,9 +138,9 @@ func (d *documentUsecase) GetDmDocs(ctx context.Context, uid uint, did uint) ([]
 
 	return reDocs, dmInfo, nil
 }
-func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string) (map[string][]*biz.Document, error) {
-	if uid < 0 || typeStr == "" {
-		return nil, errors.New("[GetAllDmTypeDocs]uid or typeStr is nil")
+func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeStr string, offset uint, size uint) (map[string][]*biz.Document, error) {
+	if uid < 0 || typeStr == "" || offset < 0 || size <= 0 {
+		return nil, errors.New("[GetAllDmTypeDocs]uid or typeStr or offset or size is nil")
 	}
 
 	// select the user dimension infos with dimension type
@@ -156,7 +156,7 @@ func (d *documentUsecase) GetAllDmTypeDocs(ctx context.Context, uid uint, typeSt
 	result := make(map[string][]*biz.Document)
 	for _, v := range dmInfos {
 		result[v.Name] = make([]*biz.Document, 0)
-		docs, err := d.repo.GetDocsWithDid(ctx, v.ID)
+		docs, err := d.repo.GetDocsWithDid(ctx, v.ID, offset, size)
 		if err != nil {
 			return nil, fmt.Errorf("[GetAllDmTypeDocs]failed to GetDocsWithDid:err=[%+v]", err)
 		}

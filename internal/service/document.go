@@ -88,9 +88,15 @@ func (d *DocumentService) UploadUserDocument(c *gin.Context) {
 }
 
 func (d *DocumentService) GetUserAllDocs(c *gin.Context) {
-	var req v1.DimensionGetUserDmReq
+	var req v1.GetUserAllDocsReq
 	var uid uint
-	if _ = c.ShouldBind(&req); req.Uid > 0 {
+	if err := c.ShouldBind(&req); err != nil {
+		d.log.Errorf("[DocumentService-GetUserAllDocs]failed to bind:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormEmptyErr)
+		return
+	}
+
+	if req.Uid > 0 {
 		uid = req.Uid
 	}
 
@@ -99,7 +105,13 @@ func (d *DocumentService) GetUserAllDocs(c *gin.Context) {
 		uid = getUid.(uint)
 	}
 
-	docs, docsDmsMap, err := d.doc.GetUserAllDocs(c, uid)
+	if !utils.CheckOffsetSize(req.Offset, req.Size) {
+		d.log.Errorf("[DocumentService-GetUserAllDocs]illegal params:req=[%+v]", utils.JsonToString(req))
+		c.JSON(http.StatusOK, api.FormEmptyErr)
+		return
+	}
+
+	docs, docsDmsMap, err := d.doc.GetUserAllDocs(c, uid, req.Offset, req.Size)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetUserAllDocs]failed to GetUserAllDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -253,13 +265,13 @@ func (d *DocumentService) GetUserDimensionDocs(c *gin.Context) {
 		uid = getUid.(uint)
 	}
 
-	if req.Did <= 0 {
-		d.log.Errorf("[DocumentService-GetUserDimensionDocs]illegal did")
+	if req.Did <= 0 || !utils.CheckOffsetSize(req.Offset, req.Size) {
+		d.log.Errorf("[DocumentService-GetUserDimensionDocs]illegal params:req=[%+v]", utils.JsonToString(req))
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
-	docs, dm, err := d.doc.GetDmDocs(c, uid, req.Did)
+	docs, dm, err := d.doc.GetDmDocs(c, uid, req.Did, req.Offset, req.Size)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetUserDimensionDocs]failed to GetDmDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -316,13 +328,13 @@ func (d *DocumentService) GetUserAllDimensionDocs(c *gin.Context) {
 		uid = getUid.(uint)
 	}
 
-	if !utils.CheckUserType(req.Type) {
-		d.log.Errorf("[DocumentService-GetUserAllDimensionDocs]illegal params")
+	if !utils.CheckUserType(req.Type) || !utils.CheckOffsetSize(req.Offset, req.Size) {
+		d.log.Errorf("[DocumentService-GetUserAllDimensionDocs]illegal params:req=[%+v]", utils.JsonToString(req))
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
-	typeDocs, err := d.doc.GetAllDmTypeDocs(c, uid, req.Type)
+	typeDocs, err := d.doc.GetAllDmTypeDocs(c, uid, req.Type, req.Offset, req.Size)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetUserAllDimensionDocs]failed to GetAllDmTypeDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -442,13 +454,13 @@ func (d *DocumentService) GetAllDimensionDocs(c *gin.Context) {
 		return
 	}
 
-	if !utils.CheckAllType(req.Type) {
-		d.log.Errorf("[DocumentService-GetAllDimensionDocs]illegal params")
+	if !utils.CheckAllType(req.Type) || !utils.CheckOffsetSize(req.Offset, req.Size) {
+		d.log.Errorf("[DocumentService-GetAllDimensionDocs]illegal params:req=[%+v]", req)
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
-	typeDocs, err := d.doc.GetAllDmTypeDocs(c, 0, req.Type)
+	typeDocs, err := d.doc.GetAllDmTypeDocs(c, 0, req.Type, req.Offset, req.Size)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetAllDimensionDocs]failed to GetAllDmTypeDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
