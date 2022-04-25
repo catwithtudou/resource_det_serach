@@ -47,6 +47,9 @@ const (
 	DownloadNum = "download_num"
 )
 
+var SortNums = []string{LikeNum, ScanNum, DownloadNum}
+var SortSearchNums = []string{"_score", "upload_date", LikeNum, ScanNum, DownloadNum}
+
 const (
 	ClassDocument = "class_document"
 )

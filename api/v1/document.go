@@ -57,8 +57,9 @@ type GetUserAllDocsResp struct {
 }
 
 type GetAllDocsReq struct {
-	Offset uint `form:"offset" json:"offset"`
-	Size   uint `form:"size" binding:"required" json:"size"`
+	Offset uint   `form:"offset" json:"offset"`
+	Size   uint   `form:"size" binding:"required" json:"size"`
+	SortBy string `form:"sort_by" json:"sort_by"`
 }
 
 type GetAllDocsResp struct {
@@ -98,9 +99,10 @@ type GetUserAllDimensionDocsResp struct {
 }
 
 type GetDimensionDocsReq struct {
-	Did    uint `form:"did" binding:"required" json:"did"`
-	Offset uint `form:"offset" json:"offset"`
-	Size   uint `form:"size" binding:"required" json:"size"`
+	Did    uint   `form:"did" binding:"required" json:"did"`
+	Offset uint   `form:"offset" json:"offset"`
+	Size   uint   `form:"size" binding:"required" json:"size"`
+	SortBy string `form:"sort_by" json:"sort_by"`
 }
 
 type GetDimensionDocsResp struct {

@@ -30,7 +30,13 @@ func (cd *ClassDocumentService) SearchAllQuery(c *gin.Context) {
 		return
 	}
 
-	cds, err := cd.cd.SearchAllQuery(c, req.Detail, req.PartId)
+	if !utils.CheckSearchSortBy(req.SortBy) {
+		cd.log.Errorf("[ClassDocumentService-SearchAllQuery]illegal params:req=[%+v]", utils.JsonToString(req))
+		c.JSON(http.StatusOK, api.FormIllegalErr)
+		return
+	}
+
+	cds, err := cd.cd.SearchAllQuery(c, req.Detail, req.PartId, req.SortBy)
 	if err != nil {
 		cd.log.Errorf("[ClassDocumentService-SearchAllQuery]failed to SearchAllQuery:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)

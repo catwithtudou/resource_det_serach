@@ -122,3 +122,15 @@ func CheckOffsetSize(offset uint, size uint) bool {
 	}
 	return true
 }
+
+func CheckSortBy(sortBy string) bool {
+	if sortBy == "" {
+		return true
+	}
+
+	return Contains(constants.SortNums, sortBy)
+}
+
+func CheckSearchSortBy(sortBy string) bool {
+	return Contains(constants.SortSearchNums, sortBy)
+}

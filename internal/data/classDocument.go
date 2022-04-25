@@ -40,13 +40,13 @@ func (c *classDocumentRepo) InsertDoc(ctx context.Context, docId uint, cd *biz.C
 	return nil
 }
 
-func (c *classDocumentRepo) SearchAllQuery(ctx context.Context, queryStr string) ([]*biz.ClassDocument, error) {
+func (c *classDocumentRepo) SearchAllQuery(ctx context.Context, queryStr string, sortBy string) ([]*biz.ClassDocument, error) {
 	if queryStr == "" {
 		return nil, errors.New("query str is nil")
 	}
 
 	query := elastic.NewQueryStringQuery(queryStr)
-	res, err := c.data.es.Search(c.idx).Query(query).Do(ctx)
+	res, err := c.data.es.Search(c.idx).Query(query).Sort(sortBy, false).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -54,14 +54,14 @@ func (c *classDocumentRepo) SearchAllQuery(ctx context.Context, queryStr string)
 	return c.searchCDValue(res), nil
 }
 
-func (c *classDocumentRepo) SearchQueryByPart(ctx context.Context, queryStr string, partName string) ([]*biz.ClassDocument, error) {
+func (c *classDocumentRepo) SearchQueryByPart(ctx context.Context, queryStr string, partName string, sortBy string) ([]*biz.ClassDocument, error) {
 	if queryStr == "" || partName == "" {
 		return nil, errors.New("queryStr or partName is nil")
 	}
 
 	query := elastic.NewBoolQuery()
 	query.Must(elastic.NewMatchPhraseQuery("part", partName), elastic.NewQueryStringQuery(queryStr))
-	res, err := c.data.es.Search(c.idx).Query(query).Do(ctx)
+	res, err := c.data.es.Search(c.idx).Query(query).Sort(sortBy, false).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +85,9 @@ func (c *classDocumentRepo) UpdateNums(ctx context.Context, docId uint, likeNum 
 }
 
 func (c *classDocumentRepo) searchCDValue(res *elastic.SearchResult) []*biz.ClassDocument {
+	if res == nil {
+		return nil
+	}
 	docs := make([]*biz.ClassDocument, 0)
 	for _, doc := range res.Each(reflect.TypeOf(biz.ClassDocument{})) {
 		if res, ok := doc.(biz.ClassDocument); ok {

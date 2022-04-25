@@ -5,6 +5,7 @@ import "resource_det_search/api"
 type SearchAllQueryReq struct {
 	Detail string `form:"detail" binding:"required" json:"detail"`
 	PartId uint   `form:"part_id" json:"part_id"`
+	SortBy string `form:"sort_by" binding:"required" json:"sort_by"`
 }
 
 type ClassDocumentData struct {

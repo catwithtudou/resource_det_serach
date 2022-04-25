@@ -20,13 +20,13 @@ type ClassDocument struct {
 
 type IClassDocumentRepo interface {
 	InsertDoc(ctx context.Context, docId uint, cd *ClassDocument) error
-	SearchAllQuery(ctx context.Context, queryStr string) ([]*ClassDocument, error)
-	SearchQueryByPart(ctx context.Context, queryStr string, partName string) ([]*ClassDocument, error)
+	SearchAllQuery(ctx context.Context, queryStr string, sortBy string) ([]*ClassDocument, error)
+	SearchQueryByPart(ctx context.Context, queryStr string, partName string, sortBy string) ([]*ClassDocument, error)
 	UpdateNums(ctx context.Context, docId uint, likeNum uint, scanNum uint, downloadNum uint) error
 }
 
 // TODO:搜索引擎查询分页处理
 
 type IClassDocumentUsecase interface {
-	SearchAllQuery(ctx context.Context, queryStr string, partId uint) ([]*ClassDocument, error)
+	SearchAllQuery(ctx context.Context, queryStr string, partId uint, sortBy string) ([]*ClassDocument, error)
 }

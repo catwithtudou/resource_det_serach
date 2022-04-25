@@ -68,12 +68,12 @@ func (d *documentUsecase) GetUserAllDocs(ctx context.Context, uid uint, offset u
 
 	return result, resDmsMap, nil
 }
-func (d *documentUsecase) GetAllDocs(ctx context.Context, offset uint, size uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
+func (d *documentUsecase) GetAllDocs(ctx context.Context, offset uint, size uint, sortBy string) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
 	if offset < 0 || size <= 0 {
 		return nil, nil, errors.New("offset or size is empty")
 	}
 
-	res, resDms, err := d.repo.GetDocsWithDms(ctx, offset, size)
+	res, resDms, err := d.repo.GetDocsWithDms(ctx, offset, size, sortBy)
 	if err != nil {
 		return nil, nil, fmt.Errorf("[GetAllDocs]failed to GetDocs:err=[%+v]", err)
 	}
@@ -297,7 +297,7 @@ func (d *documentUsecase) GetDocWithDms(ctx context.Context, docId uint) (*biz.D
 
 	return doc, dmMap, nil
 }
-func (d *documentUsecase) GetPartDocs(ctx context.Context, did uint, offset uint, size uint) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
+func (d *documentUsecase) GetPartDocs(ctx context.Context, did uint, offset uint, size uint, sortBy string) ([]*biz.Document, map[uint]map[string][]*biz.Dimension, error) {
 	if did <= 0 || offset < 0 || size <= 0 {
 		return nil, nil, errors.New("[GetPartDocs] did or offset or size is nil")
 	}
@@ -315,7 +315,7 @@ func (d *documentUsecase) GetPartDocs(ctx context.Context, did uint, offset uint
 	}
 
 	// select the docs with did
-	res, resDms, err := d.repo.GetDocsByDidWithDms(ctx, did, offset, size)
+	res, resDms, err := d.repo.GetDocsByDidWithDms(ctx, did, offset, size, sortBy)
 	if err != nil {
 		return nil, nil, fmt.Errorf("[GetPartDocs]failed to GetDocs:err=[%+v]", err)
 	}

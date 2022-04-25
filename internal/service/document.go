@@ -180,13 +180,13 @@ func (d *DocumentService) GetAllDocs(c *gin.Context) {
 		return
 	}
 
-	if !utils.CheckOffsetSize(req.Offset, req.Size) || req.Offset < 0 {
-		d.log.Errorf("[DocumentService-GetAllDocs]illegal params")
+	if !utils.CheckOffsetSize(req.Offset, req.Size) || req.Offset < 0 || !utils.CheckSortBy(req.SortBy) {
+		d.log.Errorf("[DocumentService-GetAllDocs]illegal params:req=[%+v]", utils.JsonToString(req.SortBy))
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
-	docs, docsDmsMap, err := d.doc.GetAllDocs(c, req.Offset, req.Size)
+	docs, docsDmsMap, err := d.doc.GetAllDocs(c, req.Offset, req.Size, req.SortBy)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetAllDocs]failed to GetUserAllDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
@@ -379,13 +379,13 @@ func (d *DocumentService) GetDimensionDocs(c *gin.Context) {
 		return
 	}
 
-	if req.Did <= 0 || !utils.CheckOffsetSize(req.Offset, req.Size) {
+	if req.Did <= 0 || !utils.CheckOffsetSize(req.Offset, req.Size) || !utils.CheckSortBy(req.SortBy) {
 		d.log.Errorf("[DocumentService-GetDimensionDocs]illegal params:req=[%+v]", utils.JsonToString(req))
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
 	}
 
-	docs, docsDmsMap, err := d.doc.GetPartDocs(c, req.Did, req.Offset, req.Size)
+	docs, docsDmsMap, err := d.doc.GetPartDocs(c, req.Did, req.Offset, req.Size, req.SortBy)
 	if err != nil {
 		d.log.Errorf("[DocumentService-GetDimensionDocs]failed to GetDmDocs:err=[%+v]", err)
 		c.JSON(http.StatusOK, api.DefaultErr)
