@@ -167,3 +167,16 @@ type GetDocWithDmsResp struct {
 	api.RespCommon
 	Data *DocWithDmsData `json:"data,omitempty"`
 }
+
+type GetUserDocCountReq struct {
+	Uid uint `form:"uid" binding:"required" json:"uid"`
+}
+
+type UserDocCountData struct {
+	Count int64 `json:"count"`
+}
+
+type GetUserDocCountResp struct {
+	api.RespCommon
+	Data *UserDocCountData `json:"data,omitempty"`
+}

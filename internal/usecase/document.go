@@ -347,6 +347,19 @@ func (d *documentUsecase) GetPartDocs(ctx context.Context, did uint, offset uint
 	return result, resDmsMap, nil
 }
 
+func (d *documentUsecase) GetUserDocCount(ctx context.Context, uid uint) (int64, error) {
+	if uid <= 0 {
+		return 0, errors.New("[GetUserDocCount]uid is nil")
+	}
+
+	result, err := d.repo.GetUserDocCount(ctx, uid)
+	if err != nil {
+		return 0, fmt.Errorf("[GetUserDocCount]failed to GetUserDocCount:err=[%+v]", err)
+	}
+
+	return result, nil
+}
+
 func (d *documentUsecase) uploadDetSearch(ctx context.Context, docId uint, doc *biz.Document, part *biz.Dimension, categories []*biz.Dimension, tags []*biz.Dimension, fileData []byte) {
 	defer func() {
 		if r := recover(); r != nil {

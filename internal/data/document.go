@@ -258,3 +258,16 @@ func (d *documentRepo) AddDocNum(ctx context.Context, id uint, num uint, typeStr
 		Model: gorm.Model{ID: id},
 	}).UpdateColumn(typeStr, gorm.Expr(typeStr+" + ?", num)).Error
 }
+
+func (d *documentRepo) GetUserDocCount(ctx context.Context, uid uint) (int64, error) {
+	if uid <= 0 {
+		return 0, errors.New("uid is nil")
+	}
+
+	var count int64
+	if err := d.data.db.Model(&biz.Document{}).Where("uid = ? AND is_save = 1", uid).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}

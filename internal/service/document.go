@@ -627,3 +627,25 @@ func (d *DocumentService) GetDocWithDms(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 	return
 }
+
+func (d *DocumentService) GetUserDocCount(c *gin.Context) {
+	var req v1.GetUserDocCountReq
+	if err := c.ShouldBind(&req); err != nil {
+		d.log.Errorf("[DocumentService-GetUserDocCount]failed to bind:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.FormEmptyErr)
+		return
+	}
+
+	count, err := d.doc.GetUserDocCount(c, req.Uid)
+	if err != nil {
+		d.log.Errorf("[DocumentService-GetUserDocCount]failed to GetUserAllDocs:err=[%+v]", err)
+		c.JSON(http.StatusOK, api.DefaultErr)
+		return
+	}
+
+	c.JSON(http.StatusOK, &v1.GetUserDocCountResp{
+		RespCommon: api.Success,
+		Data:       &v1.UserDocCountData{Count: count},
+	})
+	return
+}

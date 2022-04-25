@@ -42,6 +42,7 @@ type IDocumentRepo interface {
 	GetDocWithDms(ctx context.Context, id uint) (*Document, []*Dimension, error)
 	GetDocsByDidWithDms(ctx context.Context, did uint, offset uint, size uint, sortBy string) ([]*Document, map[uint][]*Dimension, error)
 	AddDocNum(ctx context.Context, id uint, num uint, typeStr string) error
+	GetUserDocCount(ctx context.Context, uid uint) (int64, error)
 }
 
 type IDocumentUsecase interface {
@@ -55,6 +56,7 @@ type IDocumentUsecase interface {
 	DetFile(ctx context.Context, fileType string, fileData *multipart.FileHeader) (string, error)
 	GetDocWithDms(ctx context.Context, docId uint) (*Document, map[string][]*Dimension, error)
 	GetPartDocs(ctx context.Context, did uint, offset uint, size uint, sortBy string) ([]*Document, map[uint]map[string][]*Dimension, error)
+	GetUserDocCount(ctx context.Context, uid uint) (int64, error)
 }
 
 // TODO:优化：点赞用户限制
