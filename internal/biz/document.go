@@ -43,6 +43,7 @@ type IDocumentRepo interface {
 	GetDocsByDidWithDms(ctx context.Context, did uint, offset uint, size uint, sortBy string) ([]*Document, map[uint][]*Dimension, error)
 	AddDocNum(ctx context.Context, id uint, num uint, typeStr string) error
 	GetUserDocCount(ctx context.Context, uid uint) (int64, error)
+	GetDocIdsByDid(ctx context.Context, did uint) ([]uint, error)
 }
 
 type IDocumentUsecase interface {
@@ -60,3 +61,4 @@ type IDocumentUsecase interface {
 }
 
 // TODO:优化：点赞用户限制
+// TODO:修复 for range 影响的排序部分

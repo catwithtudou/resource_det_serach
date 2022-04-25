@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/olivere/elastic/v7"
 	"reflect"
@@ -79,6 +80,57 @@ func (c *classDocumentRepo) UpdateNums(ctx context.Context, docId uint, likeNum 
 	}).Refresh("true").Do(ctx)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (c *classDocumentRepo) UpdateDimensions(ctx context.Context, docId uint, typeStr constants.DmType, oldDmName string, newDmName string) error {
+	if docId <= 0 || typeStr == "" || oldDmName == "" || newDmName == "" {
+		return errors.New("docId or typeStr or oldDmName or newDmName is nil")
+	}
+
+	res, err := c.data.es.Get().Index(c.idx).Id(strconv.Itoa(int(docId))).Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	var cd biz.ClassDocument
+	err = json.Unmarshal(res.Source, &cd)
+	if err != nil {
+		return err
+	}
+
+	switch typeStr {
+	case constants.Tag:
+		for k, v := range cd.Tags {
+			if v == oldDmName {
+				cd.Tags[k] = newDmName
+				break
+			}
+		}
+		_, err = c.data.es.Update().Index(c.idx).Id(strconv.Itoa(int(docId))).Doc(map[string]interface{}{
+			"tags": cd.Tags,
+		}).Refresh("true").Do(ctx)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	case constants.Category:
+		for k, v := range cd.Categories {
+			if v == oldDmName {
+				cd.Categories[k] = newDmName
+				break
+			}
+		}
+		_, err = c.data.es.Update().Index(c.idx).Id(strconv.Itoa(int(docId))).Doc(map[string]interface{}{
+			"categories": cd.Categories,
+		}).Refresh("true").Do(ctx)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 
 	return nil

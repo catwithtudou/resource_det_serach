@@ -271,3 +271,16 @@ func (d *documentRepo) GetUserDocCount(ctx context.Context, uid uint) (int64, er
 
 	return count, nil
 }
+
+func (d *documentRepo) GetDocIdsByDid(ctx context.Context, did uint) ([]uint, error) {
+	if did <= 0 {
+		return nil, errors.New("did is nil")
+	}
+
+	var docIds []uint
+	if err := d.data.db.Model(&biz.DocWithDm{}).Select("doc_id").Where("did = ?", did).Find(&docIds).Error; err != nil {
+		return nil, err
+	}
+
+	return docIds, nil
+}

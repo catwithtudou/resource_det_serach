@@ -21,3 +21,11 @@ func TestUpdateNums(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestClassDocumentRepo_UpdateDimensions(t *testing.T) {
+	c, ctx := newClassDocumentRepoTest(t)
+	err := c.UpdateDimensions(ctx, 18, constants.Tag, "高等", "高等数学")
+	if err != nil {
+		t.Fatal(err)
+	}
+}

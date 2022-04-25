@@ -24,7 +24,7 @@ func TestGetDocById(t *testing.T) {
 }
 func TestGetDocsByUid(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	result, _, err := d.GetDocsByUid(ctx, 3)
+	result, _, err := d.GetDocsByUid(ctx, 3, 0, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestGetDocsByUid(t *testing.T) {
 }
 func TestGetDocsWithDid(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	result, err := d.GetDocsWithDid(ctx, 3)
+	result, err := d.GetDocsWithDid(ctx, 3, 0, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +128,7 @@ func TestAddDocNum(t *testing.T) {
 
 func TestGetDocsWithDms(t *testing.T) {
 	d, ctx := newDocumentRepoTest(t)
-	res, _, err := d.GetDocsWithDms(ctx, 0, 5)
+	res, _, err := d.GetDocsWithDms(ctx, 0, 5, "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,11 +136,20 @@ func TestGetDocsWithDms(t *testing.T) {
 		t.Logf(utils.JsonToString(v))
 	}
 	t.Logf("========================")
-	res, _, err = d.GetDocsWithDms(ctx, 5, 5)
+	res, _, err = d.GetDocsWithDms(ctx, 5, 5, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, v := range res {
 		t.Logf(utils.JsonToString(v))
 	}
+}
+
+func TestGetDocIdsByDid(t *testing.T) {
+	d, ctx := newDocumentRepoTest(t)
+	res, err := d.GetDocIdsByDid(ctx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(res)
 }

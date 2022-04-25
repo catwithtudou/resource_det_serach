@@ -1,6 +1,9 @@
 package biz
 
-import "context"
+import (
+	"context"
+	"resource_det_search/internal/constants"
+)
 
 type ClassDocument struct {
 	Id          uint     `json:"id"`
@@ -18,11 +21,14 @@ type ClassDocument struct {
 	LikeNum     int64    `json:"like_num"`
 }
 
+// TODO:修复 for range 影响的排序部分
+
 type IClassDocumentRepo interface {
 	InsertDoc(ctx context.Context, docId uint, cd *ClassDocument) error
 	SearchAllQuery(ctx context.Context, queryStr string, sortBy string) ([]*ClassDocument, error)
 	SearchQueryByPart(ctx context.Context, queryStr string, partName string, sortBy string) ([]*ClassDocument, error)
 	UpdateNums(ctx context.Context, docId uint, likeNum uint, scanNum uint, downloadNum uint) error
+	UpdateDimensions(ctx context.Context, docId uint, typeStr constants.DmType, oldDmName string, newDmName string) error
 }
 
 // TODO:搜索引擎查询分页处理

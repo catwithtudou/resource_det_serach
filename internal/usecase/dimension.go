@@ -4,19 +4,28 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"resource_det_search/internal/biz"
+	"resource_det_search/internal/constants"
+	"resource_det_search/internal/utils"
 )
 
 type dimensionUsecase struct {
 	repo     biz.IDimensionRepo
 	userRepo biz.IUserRepo
+	cdRepo   biz.IClassDocumentRepo
+	docRepo  biz.IDocumentRepo
+	logger   *zap.SugaredLogger
 }
 
-func NewDimensionUsecase(repo biz.IDimensionRepo, userRepo biz.IUserRepo) biz.IDimensionUsecase {
+func NewDimensionUsecase(repo biz.IDimensionRepo, userRepo biz.IUserRepo, cdRepo biz.IClassDocumentRepo, docRepo biz.IDocumentRepo, logger *zap.SugaredLogger) biz.IDimensionUsecase {
 	return &dimensionUsecase{
 		repo:     repo,
 		userRepo: userRepo,
+		cdRepo:   cdRepo,
+		docRepo:  docRepo,
+		logger:   logger,
 	}
 }
 
@@ -92,6 +101,10 @@ func (d *dimensionUsecase) UpdateUserDm(ctx context.Context, did uint, name stri
 		return errors.New("[UpdateUserDm]uid difference")
 	}
 
+	if dm.Name == name {
+		return fmt.Errorf("[UpdateUserDm]update name is same:dm=[%+v]", utils.JsonToString(dm))
+	}
+
 	err = d.repo.UpdateDm(ctx, &biz.Dimension{
 		Model: gorm.Model{ID: did},
 		Name:  name,
@@ -99,6 +112,9 @@ func (d *dimensionUsecase) UpdateUserDm(ctx context.Context, did uint, name stri
 	if err != nil {
 		return fmt.Errorf("[UpdateUserDm]failed to UpdateDm:err=[%+v]", err)
 	}
+
+	// 异步修改搜索引擎存储
+	go d.updateDimensionSearch(ctx, did, constants.DmType(dm.Type), dm.Name, name)
 
 	return nil
 }
@@ -134,4 +150,32 @@ func (d *dimensionUsecase) GetDmsPartType(ctx context.Context) ([]*biz.Dimension
 		return nil, nil
 	}
 	return result, nil
+}
+
+func (d *dimensionUsecase) updateDimensionSearch(ctx context.Context, did uint, typeStr constants.DmType, oldDmName string, newDmName string) {
+	defer func() {
+		if r := recover(); r != nil {
+			d.logger.Errorf("[updateDimensionSearch]panic recover:%+v", r)
+		}
+	}()
+
+	// select the dm documents docId
+	docIds, err := d.docRepo.GetDocIdsByDid(ctx, did)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		d.logger.Errorf("[updateDimensionSearch]failed to GetDocIdsByDid:err=[%+v]", err)
+		return
+	}
+
+	if len(docIds) == 0 {
+		return
+	}
+
+	for _, v := range docIds {
+		err = d.cdRepo.UpdateDimensions(ctx, v, typeStr, oldDmName, newDmName)
+		if err != nil {
+			d.logger.Errorf("[updateDimensionSearch]failed to UpdateDimensions:err=[%+v]", err)
+		}
+	}
+
+	return
 }
