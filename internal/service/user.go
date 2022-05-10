@@ -88,7 +88,7 @@ func (u *UserService) Register(c *gin.Context) {
 		return
 	}
 
-	if len(req.Email) > 100 || len(req.School) > 100 || len(req.Name) > 100 || !utils.CheckEmail(req.Email) || !utils.CheckRole(req.Role) || !utils.CheckSex(req.Sex) || utils.CheckPswd(req.Pswd) {
+	if len(req.Email) > 100 || len(req.School) > 100 || len(req.Name) > 100 || !utils.CheckEmail(req.Email) || !utils.CheckRole(req.Role) || !utils.CheckSex(req.Sex) || !utils.CheckPswd(req.Pswd) {
 		u.log.Errorf("[UserService-Register]illegal params")
 		c.JSON(http.StatusOK, api.FormIllegalErr)
 		return
